@@ -3,6 +3,9 @@
 namespace custodial;
 
 require_once __DIR__."/../utils/ExtensiblePost.php";
+require_once __DIR__."/CurrencyAdapter.php";
+require_once __DIR__."/ElectrumAdapter.php";
+require_once __DIR__."/PlaymoneyAdapter.php";
 
 class Currency extends ExtensiblePost {
 	public function getAdapter() {
@@ -13,5 +16,12 @@ class Currency extends ExtensiblePost {
 			case "electrum":
 				return new ElectrumAdapter($this);
 		}
+	}
+
+	static function getAvailableAdapters() {
+		return array(
+			PlaymoneyAdapter::class,
+			ElectrumAdapter::class
+		);
 	}
 }
