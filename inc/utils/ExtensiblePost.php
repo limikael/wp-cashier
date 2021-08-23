@@ -6,6 +6,30 @@ require_once __DIR__."/Template.php";
 
 class ExtensiblePost {
 	private static $current;
+	public $post;
+
+	public function __construct($post) {
+		if (get_class($post)!="WP_Post")
+			throw new \Exception("Must be created with a post");
+
+		$this->post=$post;
+	}
+
+	public function __get($name) {
+		$compositeProps=array(
+			"ID", "post_author", "post_date", "post_date_gmt",
+			"post_content", "post_title", "post_excerpt", "post_status",
+			"ping_status", "post_password", "post_name", "to_ping",
+			"pinged", "post_modified", "post_modified_gmt", "post_content_filtered",
+			"post_parent", "guid", "menu_order", "post_type", "post_mime_type",
+			"comment_count", "filter"
+		);
+
+		if (in_array($name,$compositeProps))
+			return $this->post->$name;
+
+		throw new \Exception("Undefined: ".$name);
+	}
 
 	public static function post_type() {
 		$post_type=preg_replace('/^.*\\\\/','',get_called_class());
@@ -40,10 +64,15 @@ class ExtensiblePost {
 
 	public static function addMetaBox($name, $cb) {
 		$f=function() use($name, $cb) {
+			$excb=function($post) use ($cb){
+				$class=get_called_class();
+				return $cb(new $class($post));
+			};
+
 			add_meta_box(
 				self::post_type()."_".$name,
 				$name,
-				$cb,
+				$excb,
 				self::post_type()
 			);
 		};
@@ -62,6 +91,20 @@ class ExtensiblePost {
 		};
 
 		add_filter("the_content",$f,1);
+	}
+
+	public static function registerSaveHandler($saveHandler) {
+		$f=function($postId) use($saveHandler) {
+			$class=get_called_class();
+			$post=get_post($postId);
+
+			if ($post && $post->post_type==self::post_type()) {
+				$extensiblePost=new $class($post);
+				$saveHandler($extensiblePost);
+			}
+		};
+
+		add_action("save_post",$f);
 	}
 
 	public static function useCleanSaveForm() {
