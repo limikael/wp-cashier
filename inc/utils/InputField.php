@@ -5,8 +5,8 @@ namespace custodial;
 require_once __DIR__."/../utils/HtmlUtil.php";
 
 class InputField {
-	private $upstreamValue;
-	private $loadedPostId;
+	private $value;
+	private $condition;
 
 	public function __construct($props=array()) {
 		foreach($props as $k=>$v)
@@ -19,48 +19,66 @@ class InputField {
 			$this->type="text";
 	}
 
-	public function setUpstreamValue($value) {
-		$this->upstreamValue=$value;
+	public function setCondition($condition) {
+		$this->condition=$condition;
 	}
 
-	public function getUpstreamValue() {
-		return $this->upstreamValue;
+	public function setValue($value) {
+		$this->value=$value;
 	}
 
-	public function getCurrentValue() {
-		if (array_key_exists($this->name,$_REQUEST))
-			return HtmlUtil::getReqVar($this->name);
-
-		return $this->upstreamValue;
+	public function getValue() {
+		return $this->value;
 	}
 
-	public function display() {
-		echo "<tr><th>".esc_html($this->name)."</th><td>";
+	public function useFormValue($formData) {
+		$this->setValue(wp_unslash($formData[$this->name]));
+	}
+
+	public function render() {
 		switch ($this->type) {
 			case 'select':
-				$options=HtmlUtil::renderSelectOptions($this->options,$this->getCurrentValue());
-				echo self::renderTag("select",array(
+				$options=HtmlUtil::renderSelectOptions($this->options,$this->getValue());
+				return HtmlUtil::renderTag("select",array(
 					"name"=>$this->name,
 				),$options);
 				break;
 
 			case 'text':
-				echo self::renderTag("input",array(
+				return HtmlUtil::renderTag("input",array(
 					"type"=>"text",
 					"name"=>$this->name,
-					"value"=>$this->getCurrentValue()
+					"value"=>$this->getValue()
 				));
 				break;
+
+			default:
+				throw new \Exception("Unknown type: ".$this->type);
+				break;
 		}
-		echo "</td></tr>";
 	}
 
-	private static function renderTag($tag, $attr, $content="") {
-		$s="<$tag";
-		foreach ($attr as $k=>$v)
-			$s.=" ".$k.'="'.esc_attr($v).'"';
-		$s.=">$content</$tag>";
+	private function querifyCondition() {
+		$c=array();
 
-		return $s;
+		foreach ($this->condition as $k=>$v)
+			$c["[name=".$k."]"]=$v;
+
+		return $c;
+	}
+
+	public function renderTr() {
+		$content=
+			"<th>".esc_html($this->name)."</th>".
+			"<td>".$this->render()."</td>";
+
+		$attr=array();
+
+		if ($this->condition) {
+			$attr["data-condition"]=json_encode($this->querifyCondition());
+			$attr["style"]="display: none";
+		}
+
+		return HtmlUtil::renderTag("tr",$attr,$content);
 	}
 }

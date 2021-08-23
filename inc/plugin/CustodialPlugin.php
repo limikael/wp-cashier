@@ -16,5 +16,9 @@ class CustodialPlugin extends Singleton {
 			'Version'=>'Version',
 			'TextDomain'=>'Text Domain'
 		));
+
+		wp_enqueue_script("custodial",
+			CUSTODIAL_URL."/res/custodial.js",
+			array("jquery"),$this->data["Version"],true);
 	}
 }

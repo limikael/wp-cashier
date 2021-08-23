@@ -33,9 +33,12 @@ class CurrencyController extends Singleton {
 		));
 
 		foreach (Currency::getAvailableAdapters() as $adapter) {
-			foreach ($adapter::CONFIG as $field) {
-//				$field->setCondition($adapterSelect,$adapter->getType());
-				$collection->addField(new InputField($field));
+			foreach ($adapter::CONFIG as $fieldConfig) {
+				$field=new InputField($fieldConfig);
+				$field->setCondition(array(
+					"adapter"=>$adapter::ID
+				));
+				$collection->addField($field);
 			}
 		}
 

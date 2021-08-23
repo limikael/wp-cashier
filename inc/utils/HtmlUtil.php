@@ -75,4 +75,13 @@ class HtmlUtil {
 		//Close the session.
 		session_write_close();
 	}
+
+	public static function renderTag($tag, $attr, $content="") {
+		$s="<$tag";
+		foreach ($attr as $k=>$v)
+			$s.=" ".$k.'="'.esc_attr($v).'"';
+		$s.=">$content</$tag>";
+
+		return $s;
+	}
 }

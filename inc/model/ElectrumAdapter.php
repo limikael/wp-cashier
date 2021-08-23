@@ -3,6 +3,7 @@
 namespace custodial;
 
 class ElectrumAdapter extends CurrencyAdapter {
+	const ID="electrum";
 	const CONFIG=array(
 		array(
 			"name"=>"elecrumUrl"

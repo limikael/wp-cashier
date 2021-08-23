@@ -21,29 +21,23 @@ class InputFieldCollection {
 	public function display() {
 		echo "<table class='form-table'>";
 
-		foreach ($this->fields as $field) {
-			$field->display();
-		}
+		foreach ($this->fields as $field)
+			echo $field->renderTr();
 
 		echo "</table>";
 	}
 
 	public function loadPostMeta($postId) {
-		$this->loadedPostId=$postId;
 		foreach ($this->fields as &$field) {
 			$v=get_post_meta($postId,$field->name,TRUE);
-			$field->setUpstreamValue($v);
+			$field->setValue($v);
 		}
 	}
 
 	public function savePostMeta($postId) {
-		if ($postId!=$this->loadedPostId)
-			$this->loadPostMeta($postId);
-
 		foreach ($this->fields as &$field) {
-			$value=$field->getCurrentValue();
-			$upstream=$field->getUpstreamValue();
-			update_post_meta($postId,$field->name,$value,$upstream);
+			$field->useFormValue($_REQUEST);
+			update_post_meta($postId,$field->name,$field->getValue());
 		}
 	}
 }
