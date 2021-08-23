@@ -57,6 +57,8 @@ class ExtensiblePost {
 					is_main_query() &&
 					is_singular(self::post_type()))
 				return $cb(self::getCurrent());
+
+			return $content;
 		};
 
 		add_filter("the_content",$f,1);
