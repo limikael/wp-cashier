@@ -19,19 +19,15 @@ class InputField {
 			$this->type="text";
 	}
 
-	public function loadPostMeta($postId) {
-		$this->loadedPostId=$postId;
-		$this->upstreamValue=get_post_meta($postId,$this->name,TRUE);
+	public function setUpstreamValue($value) {
+		$this->upstreamValue=$value;
 	}
 
-	public function savePostMeta($postId) {
-		if (!$this->loadedPostId!=$postId)
-			$this->loadPostMeta($postId);
-
-		update_post_meta($postId,$this->name,$this->getFormValue(),$this->upstreamValue);
+	public function getUpstreamValue() {
+		return $this->upstreamValue;
 	}
 
-	private function getFormValue() {
+	public function getCurrentValue() {
 		if (array_key_exists($this->name,$_REQUEST))
 			return HtmlUtil::getReqVar($this->name);
 
@@ -42,7 +38,7 @@ class InputField {
 		echo "<tr><th>".esc_html($this->name)."</th><td>";
 		switch ($this->type) {
 			case 'select':
-				$options=HtmlUtil::renderSelectOptions($this->options,$this->getFormValue());
+				$options=HtmlUtil::renderSelectOptions($this->options,$this->getCurrentValue());
 				echo self::renderTag("select",array(
 					"name"=>$this->name,
 				),$options);
@@ -52,7 +48,7 @@ class InputField {
 				echo self::renderTag("input",array(
 					"type"=>"text",
 					"name"=>$this->name,
-					"value"=>$this->getFormValue()
+					"value"=>$this->getCurrentValue()
 				));
 				break;
 		}

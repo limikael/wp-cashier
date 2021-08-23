@@ -4,6 +4,7 @@ namespace custodial;
 
 class InputFieldCollection {
 	private $fields;
+	private $loadedPostId;
 
 	public function __construct() {
 		$this->fields=[];
@@ -28,12 +29,21 @@ class InputFieldCollection {
 	}
 
 	public function loadPostMeta($postId) {
-		foreach ($this->fields as $field)
-			$field->loadPostMeta($postId);
+		$this->loadedPostId=$postId;
+		foreach ($this->fields as &$field) {
+			$v=get_post_meta($postId,$field->name,TRUE);
+			$field->setUpstreamValue($v);
+		}
 	}
 
 	public function savePostMeta($postId) {
-		foreach ($this->fields as $field)
-			$field->savePostMeta($postId);
+		if ($postId!=$this->loadedPostId)
+			$this->loadPostMeta($postId);
+
+		foreach ($this->fields as &$field) {
+			$value=$field->getCurrentValue();
+			$upstream=$field->getUpstreamValue();
+			update_post_meta($postId,$field->name,$value,$upstream);
+		}
 	}
 }
