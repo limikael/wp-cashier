@@ -21,11 +21,15 @@ class CashierPlugin extends Singleton {
 			'TextDomain'=>'Text Domain'
 		));
 
+		add_action("wp_enqueue_scripts",array($this,"enqueue_scripts"));
+		add_action("admin_enqueue_scripts",array($this,"enqueue_scripts"));
+		add_filter("cashier_adapters",array($this,"cashier_adapters"),10,1);
+	}
+
+	public function enqueue_scripts() {
 		wp_enqueue_script("cashier",
 			CASHIER_URL."/res/cashier.js",
 			array("jquery"),$this->data["Version"],true);
-
-		add_filter("cashier_adapters",array($this,"cashier_adapters"),10,1);
 	}
 
 	public function cashier_adapters($adapters) {
