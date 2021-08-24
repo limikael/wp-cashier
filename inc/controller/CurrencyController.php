@@ -25,8 +25,8 @@ class CurrencyController extends Singleton {
 		$collection=new InputFieldCollection();
 
 		$adapterOptions=array();
-		foreach (Currency::getAvailableAdapters() as $adapter)
-			$adapterOptions[$adapter]=$adapter::NAME;
+		foreach (CashierPlugin::instance()->getAdapters() as $id=>$adapter)
+			$adapterOptions[$id]=$adapter["title"];
 
 		$adapterSelect=$collection->createField(array(
 			"name"=>"adapter",
@@ -34,11 +34,11 @@ class CurrencyController extends Singleton {
 			"options"=>$adapterOptions
 		));
 
-		foreach (Currency::getAvailableAdapters() as $adapter) {
-			foreach ($adapter::CONFIG as $fieldConfig) {
+		foreach (CashierPlugin::instance()->getAdapters() as $id=>$adapter) {
+			foreach ($adapter["config"] as $fieldConfig) {
 				$field=new InputField($fieldConfig);
 				$field->setCondition(array(
-					"adapter"=>$adapter
+					"adapter"=>$id
 				));
 				$collection->addField($field);
 			}
