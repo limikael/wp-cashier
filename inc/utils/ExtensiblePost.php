@@ -3,6 +3,7 @@
 namespace custodial;
 
 require_once __DIR__."/Template.php";
+require_once __DIR__."/StringUtil.php";
 
 class ExtensiblePost {
 	private static $current;
@@ -38,21 +39,29 @@ class ExtensiblePost {
 		return $post_type;
 	}
 
-	public static function registerPostType() {
-		$f=function() {
-			$post_type=self::post_type();
+	public static function registerPostType($params=array()) {
+		$f=function() use ($params) {
+			$name=ucfirst(self::post_type());
+			$plural=StringUtil::plural($name);
 
-			register_post_type(self::post_type(),array(
+			$default=array(
 				'labels'=>array(
-					'name'=>__( "$post_type" ),
-					'singular_name'=>__( "$post_type" ),
-					'not_found'=>__("No $post_type."),
-					'add_new_item'=>__("Add New $post_type"),
-					'edit_item'=>__("Edit $post_type")
+					'name'=>$plural,
+					'singular_name'=>$name,
+					'not_found'=>"No $plural.",
+					'add_new_item'=>"Add New $name",
+					'edit_item'=>"Edit $name",
+					'item_updated'=>"$name updated.",
+					'search_items'=>"Search $plural"
 				),
 				'supports'=>array('title'),
 				'public'=>true,
-			));
+			);
+
+			register_post_type(
+				self::post_type(),
+				array_merge($default,$params)
+			);
 		};
 
 		if (current_action()=="init")
@@ -63,7 +72,7 @@ class ExtensiblePost {
 	}
 
 	public static function addMetaBox($name, $cb) {
-		$f=function() use($name, $cb) {
+		$f=function() use ($name, $cb) {
 			$excb=function($post) use ($cb){
 				$class=get_called_class();
 				return $cb(new $class($post));
@@ -81,7 +90,7 @@ class ExtensiblePost {
 	}
 
 	public static function registerContentHandler($cb) {
-		$f=function($content) use($cb) {
+		$f=function($content) use ($cb) {
 			if (in_the_loop() &&
 					is_main_query() &&
 					is_singular(self::post_type()))
@@ -94,17 +103,18 @@ class ExtensiblePost {
 	}
 
 	public static function registerSaveHandler($saveHandler) {
-		$f=function($postId) use($saveHandler) {
-			$class=get_called_class();
-			$post=get_post($postId);
-
-			if ($post && $post->post_type==self::post_type()) {
+		$f=function($postId, $post, $update) use ($saveHandler) {
+			if ($post &&
+					$post->post_type==self::post_type() &&
+					$update &&
+					array_key_exists("save",$_POST)) {
+				$class=get_called_class();
 				$extensiblePost=new $class($post);
 				$saveHandler($extensiblePost);
 			}
 		};
 
-		add_action("save_post",$f);
+		add_action("save_post",$f,10,3);
 	}
 
 	public static function useCleanSaveForm() {
@@ -142,6 +152,20 @@ class ExtensiblePost {
 		};
 
 		add_filter('post_row_actions',$f,10,2);
+	}
+
+	public static function setupMessages() {
+		$f=function($messages) {
+			$message=ucfirst(self::post_type())." Updated.";
+
+			$messages[self::post_type()]=array();
+			for ($i=1; $i<=10; $i++)
+				$messages[self::post_type()][$i]=$message;
+
+			return $messages;
+		};
+
+		add_filter('post_updated_messages',$f,10,1);
 	}
 
 	public static final function getCurrent() {

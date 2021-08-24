@@ -7,6 +7,7 @@ require_once __DIR__."/../utils/HtmlUtil.php";
 class InputField {
 	private $value;
 	private $condition;
+	private $label;
 
 	public function __construct($props=array()) {
 		foreach($props as $k=>$v)
@@ -32,7 +33,7 @@ class InputField {
 	}
 
 	public function useFormValue($formData) {
-		$this->setValue(wp_unslash($formData[$this->name]));
+		$this->setValue($formData[$this->name]);
 	}
 
 	public function render() {
@@ -46,6 +47,7 @@ class InputField {
 
 			case 'text':
 				return HtmlUtil::renderTag("input",array(
+					"class"=>"regular-text",
 					"type"=>"text",
 					"name"=>$this->name,
 					"value"=>$this->getValue()
@@ -56,6 +58,13 @@ class InputField {
 				throw new \Exception("Unknown type: ".$this->type);
 				break;
 		}
+	}
+
+	public function getLabel() {
+		if ($this->label)
+			return $this->label;
+
+		return ucfirst($this->name);
 	}
 
 	private function querifyCondition() {
@@ -69,7 +78,7 @@ class InputField {
 
 	public function renderTr() {
 		$content=
-			"<th>".esc_html($this->name)."</th>".
+			"<th>".esc_html($this->getLabel())."</th>".
 			"<td>".$this->render()."</td>";
 
 		$attr=array();

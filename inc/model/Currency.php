@@ -8,14 +8,15 @@ require_once __DIR__."/ElectrumAdapter.php";
 require_once __DIR__."/PlaymoneyAdapter.php";
 
 class Currency extends ExtensiblePost {
-	public function getAdapter() {
-		switch ($this->getMeta("adapter")) {
-			case "playmoney":
-				return new PlaymoneyAdapter($this);
+	private $adapter;
 
-			case "electrum":
-				return new ElectrumAdapter($this);
+	public function getAdapter() {
+		if (!$this->adapter) {
+			$class=$this->getMeta("adapter");
+			$this->adapter=new $class($this);
 		}
+
+		return $this->adapter;
 	}
 
 	static function getAvailableAdapters() {

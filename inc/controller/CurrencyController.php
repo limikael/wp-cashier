@@ -12,8 +12,9 @@ class CurrencyController extends Singleton {
 		Currency::addMetaBox("Settings",array($this,"settingsMetaBox"));
 		Currency::registerContentHandler(array($this,"renderContent"));
 		Currency::registerSaveHandler(array($this,"save"));
-		Currency::useCleanSaveForm();
 		Currency::removeRowActions(array("quick-edit"));
+		Currency::useCleanSaveForm();
+		Currency::setupMessages();
 	}
 
 	public function renderContent($currency) {
@@ -23,20 +24,21 @@ class CurrencyController extends Singleton {
 	public function createInputFieldCollection() {
 		$collection=new InputFieldCollection();
 
+		$adapterOptions=array();
+		foreach (Currency::getAvailableAdapters() as $adapter)
+			$adapterOptions[$adapter]=$adapter::NAME;
+
 		$adapterSelect=$collection->createField(array(
 			"name"=>"adapter",
 			"type"=>"select",
-			"options"=>array(
-				"electrum"=>"Electrum",
-				"playmoney"=>"Playmoney"
-			),
+			"options"=>$adapterOptions
 		));
 
 		foreach (Currency::getAvailableAdapters() as $adapter) {
 			foreach ($adapter::CONFIG as $fieldConfig) {
 				$field=new InputField($fieldConfig);
 				$field->setCondition(array(
-					"adapter"=>$adapter::ID
+					"adapter"=>$adapter
 				));
 				$collection->addField($field);
 			}

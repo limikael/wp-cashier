@@ -3,7 +3,7 @@
 namespace custodial;
 
 class PlaymoneyAdapter extends CurrencyAdapter {
-	const ID="playmoney";
+	const NAME="Playmoney";
 	const CONFIG=array(
 		array(
 			"name"=>"replenish"
