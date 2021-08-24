@@ -17,10 +17,6 @@ class CurrencyController extends Singleton {
 		Currency::setupMessages();
 	}
 
-	public function renderContent($currency) {
-		return "hello this is contentasasd";
-	}
-
 	public function createInputFieldCollection() {
 		$collection=new InputFieldCollection();
 
@@ -56,5 +52,52 @@ class CurrencyController extends Singleton {
 	public function save($currency) {
 		$fieldCollection=$this->createInputFieldCollection();
 		$fieldCollection->savePostMeta($currency->ID);
+	}
+
+	public function renderContent($currency) {
+		$adapter=$currency->getAdapter();
+		$link=get_permalink($currency->ID);
+
+		$tabs=array(
+			"activity"=>array(
+				"title"=>"Activity",
+				"link"=>$link,
+			)
+		);
+
+		foreach ($adapter["tabs"] as $tabId=>$tabName) {
+			$tabs[$tabId]=array(
+				"title"=>$tabName,
+				"link"=>add_query_arg(array(
+					"tab"=>$tabId
+				),$link)
+			);
+		}
+
+		$currentTab="activity";
+		if (isset($_REQUEST["tab"]))
+			$currentTab=$_REQUEST["tab"];
+
+		$vars=array(
+			"tabs"=>$tabs,
+			"balanceText"=>"123",
+			"reservedText"=>"456",
+			"currentTab"=>$currentTab
+		);
+
+		$t=new Template(__DIR__."/../tpl/currency-header.tpl.php");
+		$content=$t->render($vars);
+
+		if ($currentTab=="activity")
+			$content.=$this->renderActivityTab($currency);
+
+		else
+			$content.=$adapter["tab_cb"]($currency,$currentTab);
+
+		return $content;
+	}
+
+	public function renderActivityTab($currency) {
+		return "activity..";
 	}
 }

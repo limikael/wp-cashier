@@ -32,6 +32,14 @@ class ExtensiblePost {
 		throw new \Exception("Undefined: ".$name);
 	}
 
+	public function getMeta($key) {
+		return get_post_meta($this->ID,$key,TRUE);
+	}
+
+	public function setMeta($key, $value) {
+		update_post_meta($this->ID,$key,$value);
+	}
+
 	public static function post_type() {
 		$post_type=preg_replace('/^.*\\\\/','',get_called_class());
 		$post_type=strtolower($post_type);
