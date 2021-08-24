@@ -1,6 +1,6 @@
 <?php
 
-namespace custodial;
+namespace cashier;
 
 class PlaymoneyAdapter extends CurrencyAdapter {
 	const NAME="Playmoney";

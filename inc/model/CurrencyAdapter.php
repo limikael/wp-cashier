@@ -1,6 +1,6 @@
 <?php
 
-namespace custodial;
+namespace cashier;
 
 class CurrencyAdapter {
 	const NAMEme="";

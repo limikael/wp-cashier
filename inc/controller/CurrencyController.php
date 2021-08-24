@@ -1,6 +1,6 @@
 <?php
 
-namespace custodial;
+namespace cashier;
 
 require_once __DIR__."/../model/Currency.php";
 require_once __DIR__."/../utils/InputField.php";

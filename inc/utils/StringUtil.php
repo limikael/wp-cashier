@@ -1,6 +1,6 @@
 <?php
 
-namespace custodial;
+namespace cashier;
 
 class StringUtil {
 	public static function plural($s) {

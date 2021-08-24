@@ -1,6 +1,6 @@
 <?php
 
-namespace custodial;
+namespace cashier;
 
 require_once __DIR__."/../utils/ExtensiblePost.php";
 require_once __DIR__."/CurrencyAdapter.php";

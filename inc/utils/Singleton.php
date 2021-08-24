@@ -1,6 +1,6 @@
 <?php
 
-namespace custodial;
+namespace cashier;
 
 /**
  * Ensures that an inheriting class is a Singleton, i.e.

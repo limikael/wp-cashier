@@ -1,6 +1,6 @@
 <?php
 
-namespace custodial;
+namespace cashier;
 
 class HtmlUtil {
 	static function renderSelectOptions($options, $current=NULL) {
