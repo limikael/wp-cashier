@@ -51,6 +51,10 @@ class Currency extends ExtensiblePost {
 		return $amount;
 	}
 
+	public function processForCurrentUser() {
+		
+	}
+
 	private static function toString($number) {
 		$s=sprintf("%.10f",$number);
 		$s=rtrim($s,"0");

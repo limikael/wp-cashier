@@ -55,17 +55,19 @@
 		}
 	}
 
-	/*function refreshBalances() {
+	function refreshBalances() {
+		//console.log("refreshing");
+
 		let data={
-			action: "tonopah-frontend",
+			action: "cashier-frontend",
 			call: "getCurrencyTexts",
-			currency: tonopahCurrency
+			currency: $("#cashier-account-balance").attr("data-currency")
 		};
 
-		if ($("#tonopah-transaction-list").length)
+		if ($("#cashier-transaction-list").length)
 			data.renderTransactionList=true;
 
-		$(window).trigger("tonopah-pre-refresh-account",data);
+		$(window).trigger("cashier-pre-refresh-account",data);
 
 		$.ajax({
 			type: "GET",
@@ -73,8 +75,8 @@
 			url: ajaxurl,
 			data: data,
 			success: function(res) {
-				let openId=$(".tonopah-tx-open-row:visible").attr("data-tx-id");
-				console.log("got balance update, open: "+openId);
+				let openId=$(".cashier-tx-open-row:visible").attr("data-tx-id");
+				//console.log("got balance update, open: "+openId);
 
 				for (let selector in res.text)
 					$(selector).text(res.text[selector]);
@@ -92,8 +94,8 @@
 		});
 	}
 
-	if ($("#tonopah-account-balance").length)
-		setTimeout(refreshBalances,refreshRate);*/
+	if ($("#cashier-account-balance").length)
+		setTimeout(refreshBalances,refreshRate);
 
 	installTxUi();
 })(jQuery);

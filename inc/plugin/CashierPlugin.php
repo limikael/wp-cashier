@@ -8,6 +8,7 @@ require_once __DIR__."/../model/Currency.php";
 require_once __DIR__."/../model/Transaction.php";
 require_once __DIR__."/../controller/CurrencyController.php";
 require_once __DIR__."/../controller/PlaymoneyController.php";
+require_once __DIR__."/../controller/AjaxController.php";
 
 class CashierPlugin extends Singleton {
 	private $data;
@@ -16,6 +17,7 @@ class CashierPlugin extends Singleton {
 
 	protected function __construct() {
 		CurrencyController::instance();
+		AjaxController::instance();
 		/*ElectrumController::instance();*/
 		PlaymoneyController::instance();
 
@@ -38,8 +40,14 @@ class CashierPlugin extends Singleton {
 			CASHIER_URL."/res/cashier.js",
 			array("jquery"),$this->data["Version"],true);
 
+		wp_localize_script("cashier","ajaxurl",admin_url('admin-ajax.php'));
+
 		wp_enqueue_style("cashier-style",
 			CASHIER_URL."/res/cashier.css",
+			array(),$this->data["Version"]);
+
+		wp_enqueue_style("bootstrap-icons",
+			"https://cdn.jsdelivr.net/npm/bootstrap-icons@1.5.0/font/bootstrap-icons.css",
 			array(),$this->data["Version"]);
 	}
 

@@ -17,15 +17,9 @@ class PlaymoneyController extends Singleton {
 
 			$user=wp_get_current_user();
 			$account=Account::getUserAccount($user->ID,$currency->ID);
-
-			/*$reservedAmount=MoneyGame::getTotalBalancesForUser(
-				"ply",
-				$user->user_login
-			);
-
-			$reservedAmount+=$account->getReserved();*/
-			$reservedAmount=0;
-			$topupAmount=1000-$account->getBalance()-$reservedAmount;
+			$reservedAmount=$account->getReserved();
+			$replenish=intval($currency->getMeta("replenish"));
+			$topupAmount=$replenish-$account->getBalance()-$reservedAmount;
 
 			if ($topupAmount>0) {
 				$t=$account->createDepositTransaction($topupAmount);
@@ -58,7 +52,11 @@ class PlaymoneyController extends Singleton {
 	}
 
 	public function tab($currency, $tab) {
+		$vars=array(
+			"replenishText"=>$currency->format($currency->getMeta("replenish"))
+		);
+
 		$t=new Template(__DIR__."/../tpl/playmoney-topup.tpl.php");
-		return $t->render();
+		return $t->render($vars);
 	}
 }
