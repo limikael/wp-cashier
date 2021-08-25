@@ -3,13 +3,16 @@
 namespace cashier;
 
 require_once __DIR__."/../utils/Singleton.php";
+require_once __DIR__."/../utils/SessionNotices.php";
 require_once __DIR__."/../model/Currency.php";
+require_once __DIR__."/../model/Transaction.php";
 require_once __DIR__."/../controller/CurrencyController.php";
 require_once __DIR__."/../controller/PlaymoneyController.php";
 
 class CashierPlugin extends Singleton {
 	private $data;
 	private $adapters;
+	private $notices;
 
 	protected function __construct() {
 		CurrencyController::instance();
@@ -26,10 +29,18 @@ class CashierPlugin extends Singleton {
 		add_filter("cashier_adapters",array($this,"cashier_adapters"),10,1);
 	}
 
+	public function activate() {
+		Transaction::install();
+	}
+
 	public function enqueue_scripts() {
 		wp_enqueue_script("cashier",
 			CASHIER_URL."/res/cashier.js",
 			array("jquery"),$this->data["Version"],true);
+
+		wp_enqueue_style("cashier-style",
+			CASHIER_URL."/res/cashier.css",
+			array(),$this->data["Version"]);
 	}
 
 	public function cashier_adapters($adapters) {
@@ -80,5 +91,12 @@ class CashierPlugin extends Singleton {
 		}
 
 		return $this->adapters;
+	}
+
+	public function getSessionNotices() {
+		if (!$this->notices)
+			$this->notices=new SessionNotices("cashier_account_notices");
+
+		return $this->notices;
 	}
 }

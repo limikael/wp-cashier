@@ -1,0 +1,27 @@
+.cashier-bs-table {
+	table-layout: fixed;
+}
+
+.cashier-bs-table td,
+.cashier-bs-table th {
+	text-overflow: ellipsis;
+	overflow: hidden;
+	white-space: nowrap;
+}
+
+.cashier-bs-table .multiline {
+	white-space: normal;
+	word-break: break-word;
+}
+
+.cashier-bs-table tr {
+	transform: rotate(0);
+}
+
+.cashier-bs-table img {
+	height: 2em;
+	margin-top: -1em;
+	margin-bottom: -1em;
+	vertical-align: 28%;
+	margin-right: 0.25em;
+}

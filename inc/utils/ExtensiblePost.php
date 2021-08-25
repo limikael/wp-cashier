@@ -10,7 +10,7 @@ class ExtensiblePost {
 	public $post;
 
 	public function __construct($post) {
-		if (get_class($post)!="WP_Post")
+		if (!$post || get_class($post)!="WP_Post")
 			throw new \Exception("Must be created with a post");
 
 		$this->post=$post;
@@ -38,6 +38,14 @@ class ExtensiblePost {
 
 	public function setMeta($key, $value) {
 		update_post_meta($this->ID,$key,$value);
+	}
+
+	public static function findOne($id) {
+		$post=get_post($id);
+		if ($post) {
+			$class=get_called_class();
+			return new $class($post);
+		}
 	}
 
 	public static function post_type() {
@@ -107,7 +115,7 @@ class ExtensiblePost {
 			return $content;
 		};
 
-		add_filter("the_content",$f,1);
+		add_filter("the_content",$f,10,1);
 	}
 
 	public static function registerSaveHandler($saveHandler) {

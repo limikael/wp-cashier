@@ -3,6 +3,7 @@
 namespace cashier;
 
 require_once __DIR__."/../model/Currency.php";
+require_once __DIR__."/../model/Account.php";
 require_once __DIR__."/../utils/InputField.php";
 require_once __DIR__."/../utils/InputFieldCollection.php";
 
@@ -82,7 +83,8 @@ class CurrencyController extends Singleton {
 			"tabs"=>$tabs,
 			"balanceText"=>"123",
 			"reservedText"=>"456",
-			"currentTab"=>$currentTab
+			"currentTab"=>$currentTab,
+			"notices"=>CashierPlugin::instance()->getSessionNotices()->renderNotices()
 		);
 
 		$t=new Template(__DIR__."/../tpl/currency-header.tpl.php");
@@ -98,6 +100,65 @@ class CurrencyController extends Singleton {
 	}
 
 	public function renderActivityTab($currency) {
-		return "activity..";
+		$user=wp_get_current_user();
+		$account=Account::getUserAccount($user->ID,$currency->ID);
+
+		$transactions=$account->getTransactions(array(
+			"status!"=>"ignored",
+			"order by stamp desc"
+		));
+
+		$transactionViews=array();
+		foreach ($transactions as $transaction) {
+			$other=$transaction->getOtherAccount($account);
+
+			$class="";
+			$iconClass="";
+			switch ($transaction->getStatus()) {
+				case "reserved":
+					$class="table-warning";
+					$iconClass="bi-hourglass-top";
+					break;
+
+				case "failed":
+					$class="table-danger";
+					$iconClass="bi-x-circle";
+					break;
+			}
+
+			$transactionView=array(
+				"stamp"=>$transaction->formatSiteTime(),
+				"amount"=>$transaction->formatRelativeAmount($account),
+				"entity"=>"-",
+				"notice"=>$transaction->notice,
+				"class"=>$class,
+				"iconClass"=>$iconClass,
+				"id"=>$transaction->id
+			);
+
+			$meta=array();
+			$meta["Time"]=$transactionView["stamp"];
+			$meta["Amount"]=$transactionView["amount"];
+
+			if ($other) {
+				$transactionView["entity"]=$other->getDisplay();
+				$meta["To/From"]=$other->getDisplay();
+			}
+
+			$meta["Notice"]=$transactionView["notice"];
+
+			foreach ($transaction->getMetas() as $key=>$value)
+				$meta[ucfirst($key)]=$value;
+
+			$transactionView["meta"]=$meta;
+			$transactionViews[]=$transactionView;
+		}
+
+		$vars=array(
+			"transactions"=>$transactionViews
+		);
+
+		$t=new Template(__DIR__."/../tpl/activity.tpl.php");
+		return $t->render($vars);
 	}
 }

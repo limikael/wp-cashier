@@ -7,7 +7,7 @@
 	<div class="col-2">123</div>
 </div>
 
-<?php /*echo $notices;*/ ?>
+<?php echo $notices; ?>
 
 <ul class="nav nav-tabs mb-3">
 	<?php foreach ($tabs as $tabId=>$tab) { ?>
@@ -18,7 +18,9 @@
 		?>
 		<li class="nav-item">
 			<a class="nav-link <?php echo esc_attr($class); ?>"
-					href="<?php echo esc_attr($tab["link"]); ?>"><?php echo esc_html($tab["title"]); ?></a>
+					href="<?php echo esc_attr($tab["link"]); ?>">
+				<?php echo esc_html($tab["title"]); ?>
+			</a>
 		</li>
 	<?php } ?>
 </ul>
