@@ -122,7 +122,7 @@ class ElectrumUser {
 			"status"=>"reserved"
 		));
 
-		$reqConfs=get_option("tphbtc_confirmations",3);
+		$reqConfs=intval($this->currency->getMeta("confirmations"));
 		foreach ($unconfirmedTransactions as $t) {
 			$txId=$t->getMeta("txid");
 
