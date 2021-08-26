@@ -11,12 +11,12 @@ class Currency extends ExtensiblePost {
 		return $adapters[$this->getMeta("adapter")];
 	}
 
-	public function getDivisorPlaces() {
-		return intval($this->getMeta("divisorPlaces"));
+	public function getDecimals() {
+		return intval($this->getMeta("decimals"));
 	}
 
 	public function format($amount, $style="standard") {
-		$dividedAmount=$amount/pow(10,$this->getDivisorPlaces());
+		$dividedAmount=$amount/pow(10,$this->getDecimals());
 
 		switch ($style) {
 			case "hyphenated":
@@ -27,7 +27,7 @@ class Currency extends ExtensiblePost {
 				break;
 
 			case "standard":
-				$dividedAmount=Currency::toString($dividedAmount);
+				$dividedAmount=sprintf("%.{$this->getDecimals()}f",$dividedAmount);
 				$dividedAmount.=" ".$this->getMeta("symbol");
 				break;
 
@@ -46,7 +46,7 @@ class Currency extends ExtensiblePost {
 	}
 
 	public function parseInput($input) {
-		$amount=floatval($input)*pow(10,$this->getDivisorPlaces());
+		$amount=floatval($input)*pow(10,$this->getDecimals());
 
 		return $amount;
 	}

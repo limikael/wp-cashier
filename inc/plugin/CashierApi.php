@@ -10,4 +10,8 @@ class CashierApi extends Singleton {
 	public function getUserAccount($userId, $currencyId) {
 		return Account::getUserAccount($userId,$currencyId);
 	}
+
+	public function getCurrency($currencyId) {
+		return Currency::findOne($currencyId);
+	}
 }

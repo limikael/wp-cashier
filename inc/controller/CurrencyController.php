@@ -29,6 +29,12 @@ class CurrencyController extends Singleton {
 			"name"=>"symbol"
 		));
 
+		$collection->createField(array(
+			"name"=>"decimals",
+			"type"=>"select",
+			"options"=>array(0,1,2,3,4,5,6,7,8),
+		));
+
 		$adapterSelect=$collection->createField(array(
 			"name"=>"adapter",
 			"type"=>"select",

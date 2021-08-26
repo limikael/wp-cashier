@@ -41,6 +41,9 @@ class ExtensiblePost {
 	}
 
 	public static function findOne($id) {
+		if (!$id)
+			return NULL; 
+
 		$post=get_post($id);
 		if ($post) {
 			$class=get_called_class();
