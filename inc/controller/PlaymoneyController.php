@@ -51,7 +51,7 @@ class PlaymoneyController extends Singleton {
 		}
 	}
 
-	public function tab($currency, $tab) {
+	public function tab($tab, $currency, $user) {
 		$vars=array(
 			"replenishText"=>$currency->format($currency->getMeta("replenish"))
 		);

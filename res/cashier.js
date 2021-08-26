@@ -1,4 +1,17 @@
 (function($) {
+	let refreshRate=10000;
+
+	function installQrCode() {
+		$(".cashier-qrcode").each(function(i, el) {
+			let qr=new QRious({
+				element: el,
+				value: el.dataset.value,
+				size: 250,
+				level: "M"
+			});
+		});
+	}
+
 	function updateConditionalVisibility() {
 		$("[data-condition]").each(function() {
 			let condition=JSON.parse($(this).attr("data-condition"));
@@ -18,20 +31,18 @@
 		});
 	}
 
-	updateConditionalVisibility();
+	function installConditionalVisibility() {
+		let exprs=[];
+		$("[data-condition]").each(function() {
+			let condition=JSON.parse($(this).attr("data-condition"));
+			for (let i in condition)
+				if (exprs.indexOf(i)<0)
+					exprs.push(i);
+		});
 
-	let exprs=[];
-	$("[data-condition]").each(function() {
-		let condition=JSON.parse($(this).attr("data-condition"));
-		for (let i in condition)
-			if (exprs.indexOf(i)<0)
-				exprs.push(i);
-	});
-
-	for (let expr of exprs)
-		$(expr).change(updateConditionalVisibility);
-
-	let refreshRate=10000;
+		for (let expr of exprs)
+			$(expr).change(updateConditionalVisibility);
+	}
 
 	function installTxUi(openId) {
 		$(".cashier-tx-closed-row a").click(function(el) {
@@ -98,4 +109,6 @@
 		setTimeout(refreshBalances,refreshRate);
 
 	installTxUi();
+	installConditionalVisibility();
+	installQrCode();
 })(jQuery);

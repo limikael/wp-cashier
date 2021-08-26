@@ -104,7 +104,7 @@ class CurrencyController extends Singleton {
 			$content.=$this->renderActivityTab($user,$currency);
 
 		else
-			$content.=$adapter["tab_cb"]($currency,$currentTab);
+			$content.=$adapter["tab_cb"]($currentTab,$currency,$user);
 
 		return $content;
 	}

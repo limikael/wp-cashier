@@ -8,6 +8,7 @@ require_once __DIR__."/../model/Currency.php";
 require_once __DIR__."/../model/Transaction.php";
 require_once __DIR__."/../controller/CurrencyController.php";
 require_once __DIR__."/../controller/PlaymoneyController.php";
+require_once __DIR__."/../controller/ElectrumController.php";
 require_once __DIR__."/../controller/AjaxController.php";
 
 class CashierPlugin extends Singleton {
@@ -18,7 +19,7 @@ class CashierPlugin extends Singleton {
 	protected function __construct() {
 		CurrencyController::instance();
 		AjaxController::instance();
-		/*ElectrumController::instance();*/
+		ElectrumController::instance();
 		PlaymoneyController::instance();
 
 		$this->data=get_file_data(CASHIER_PATH."/wp-cashier.php",array(
@@ -36,9 +37,13 @@ class CashierPlugin extends Singleton {
 	}
 
 	public function enqueue_scripts() {
+		wp_enqueue_script("qrious",
+			CASHIER_URL."/res/qrious.min.js",
+			array(),$this->data["Version"],true);
+
 		wp_enqueue_script("cashier",
 			CASHIER_URL."/res/cashier.js",
-			array("jquery"),$this->data["Version"],true);
+			array("jquery","qrious"),$this->data["Version"],true);
 
 		wp_localize_script("cashier","ajaxurl",admin_url('admin-ajax.php'));
 
@@ -68,6 +73,7 @@ class CashierPlugin extends Singleton {
 				"deposit"=>"Deposit",
 				"withdraw"=>"Withdraw",
 			),
+			"tab_cb"=>array(ElectrumController::instance(),"tab")
 		);
 
 		$adapters["playmoney"]=array(

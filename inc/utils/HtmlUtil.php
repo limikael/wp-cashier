@@ -22,6 +22,28 @@ class HtmlUtil {
 		echo HtmlUtil::renderSelectOptions($options,$current);
 	}
 
+	static function renderSelectOptionsKeyLabel($options, $current=NULL) {
+		$res="";
+
+		foreach ( $options as $option ) {
+			$key=$option["key"];
+			$label=$option["label"];
+
+			$res.=sprintf(
+				'<option value="%s" %s>%s</option>',
+				esc_attr( $key ),
+				( ( strval( $current ) === strval( $key ) ) ? 'selected' : '' ),
+				esc_html( $label )
+			);
+		}
+
+		return $res;
+	}
+
+	static function displaySelectOptionsKeyLabel($options, $current=NULL) {
+		echo HtmlUtil::renderSelectOptionsKeyLabel($options,$current);
+	}
+
 	static function getReqVar( $name, $default = null ) {
 		if ( ! isset( $_REQUEST[ $name ] ) ) {
 			if ( null !== $default ) {

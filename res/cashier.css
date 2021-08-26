@@ -25,3 +25,9 @@
 	vertical-align: 28%;
 	margin-right: 0.25em;
 }
+
+img.cashier-qrcode {
+	width: 100%;
+	max-height: 50vh;
+	max-width: 50vh;
+}
