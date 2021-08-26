@@ -2,6 +2,7 @@
 
 namespace cashier;
 
+require_once __DIR__."/CashierApi.php";
 require_once __DIR__."/../utils/Singleton.php";
 require_once __DIR__."/../utils/SessionNotices.php";
 require_once __DIR__."/../model/Currency.php";
@@ -51,6 +52,14 @@ class CashierPlugin extends Singleton {
 		flush_rewrite_rules(false);
 
 		wp_schedule_event(time(),"hourly","cashier_cron");
+	}
+
+	public function deactivate() {
+		wp_clear_scheduled_hook("cashier_cron");
+	}
+
+	public function uninstall() {
+		Transaction::uninstall();
 	}
 
 	public function enqueue_scripts() {

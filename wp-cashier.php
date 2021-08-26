@@ -23,4 +23,18 @@ function cashier_activate() {
 }
 register_activation_hook(__FILE__,'cashier_activate');
 
+function cashier_deactivate() {
+	cashier\CashierPlugin::instance()->deactivate();
+}
+register_deactivation_hook( __FILE__, 'cashier_deactivate' );
+
+function cashier_uninstall() {
+	cashier\CashierPlugin::instance()->uninstall();
+}
+register_uninstall_hook( __FILE__, 'cashier_uninstall' );
+
+function cashier_api() {
+	return cashier\CashierApi::instance();
+}
+
 cashier\CashierPlugin::instance();
