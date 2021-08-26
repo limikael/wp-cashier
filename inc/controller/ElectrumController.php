@@ -10,6 +10,31 @@ require_once __DIR__."/ElectrumUser.php";
 class ElectrumController extends Singleton {
 	protected function __construct() {
 		add_action("wp",array($this,"wp"));
+		add_filter("cashier_adapters",array($this,"cashier_adapters"),10,1);
+	}
+
+	public function cashier_adapters($adapters) {
+		$adapters["electrum"]=array(
+			"title"=>"Electrum",
+			"config"=>array(
+				array(
+					"name"=>"electrumUrl"
+				),
+				array(
+					"name"=>"confirmations",
+					"type"=>"select",
+					"options"=>array(0,1,2,3,4,5,6)
+				),
+			),
+			"tabs"=>array(
+				"deposit"=>"Deposit",
+				"withdraw"=>"Withdraw",
+			),
+			"tab_cb"=>array(ElectrumController::instance(),"tab"),
+			"process_cb"=>array(ElectrumController::instance(),"process")
+		);
+
+		return $adapters;
 	}
 
 	public function wp() {

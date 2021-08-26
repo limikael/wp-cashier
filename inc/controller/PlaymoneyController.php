@@ -7,6 +7,24 @@ require_once __DIR__."/../utils/Singleton.php";
 class PlaymoneyController extends Singleton {
 	public function __construct() {
 		add_action("wp",array($this,"wp"));
+		add_filter("cashier_adapters",array($this,"cashier_adapters"),10,1);
+	}
+
+	public function cashier_adapters($adapters) {
+		$adapters["playmoney"]=array(
+			"title"=>"Playmoney",
+			"config"=>array(
+				array(
+					"name"=>"replenish"
+				),
+			),
+			"tabs"=>array(
+				"topup"=>"Top Up",
+			),
+			"tab_cb"=>array($this,"tab")
+		);
+
+		return $adapters;
 	}
 
 	public function wp() {

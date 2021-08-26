@@ -30,7 +30,6 @@ class CashierPlugin extends Singleton {
 
 		add_action("wp_enqueue_scripts",array($this,"enqueue_scripts"));
 		add_action("admin_enqueue_scripts",array($this,"enqueue_scripts"));
-		add_filter("cashier_adapters",array($this,"cashier_adapters"),10,1);
 		add_action("cashier_cron",array($this,"cashier_cron"));
 	}
 
@@ -80,43 +79,6 @@ class CashierPlugin extends Singleton {
 		wp_enqueue_style("bootstrap-icons",
 			"https://cdn.jsdelivr.net/npm/bootstrap-icons@1.5.0/font/bootstrap-icons.css",
 			array(),$this->data["Version"]);
-	}
-
-	public function cashier_adapters($adapters) {
-		$adapters["electrum"]=array(
-			"title"=>"Electrum",
-			"config"=>array(
-				array(
-					"name"=>"electrumUrl"
-				),
-				array(
-					"name"=>"confirmations",
-					"type"=>"select",
-					"options"=>array(0,1,2,3,4,5,6)
-				),
-			),
-			"tabs"=>array(
-				"deposit"=>"Deposit",
-				"withdraw"=>"Withdraw",
-			),
-			"tab_cb"=>array(ElectrumController::instance(),"tab"),
-			"process_cb"=>array(ElectrumController::instance(),"process")
-		);
-
-		$adapters["playmoney"]=array(
-			"title"=>"Playmoney",
-			"config"=>array(
-				array(
-					"name"=>"replenish"
-				),
-			),
-			"tabs"=>array(
-				"topup"=>"Top Up",
-			),
-			"tab_cb"=>array(PlaymoneyController::instance(),"tab")
-		);
-
-		return $adapters;
 	}
 
 	public function getAdapters() {
