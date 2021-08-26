@@ -61,6 +61,8 @@ class CurrencyController extends Singleton {
 
 	public function renderContent($currency) {
 		$user=wp_get_current_user();
+		$currency->process($user);
+
 		$account=Account::getUserAccount($user->ID,$currency->ID);
 
 		$adapter=$currency->getAdapter();

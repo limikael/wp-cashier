@@ -17,7 +17,7 @@ class AjaxController extends AjaxHandler {
 
 		$account=Account::getUserAccount($user->id,$p["currency"]);
 		$currency=$account->getCurrency();
-		$response=$currency->processForCurrentUser($p);
+		$response=$currency->process($user);//,$p);
 
 		if (!$response)
 			$response=array();

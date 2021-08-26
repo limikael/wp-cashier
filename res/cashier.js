@@ -1,5 +1,14 @@
 (function($) {
 	let refreshRate=10000;
+	//let refreshRate=0;
+
+	function installCopyOnClick() {
+		$("[data-copy-on-click]").click(function(e) {
+			let data=$(this).attr("data-copy-on-click");
+			navigator.clipboard.writeText(data);
+			e.preventDefault();
+		});
+	}
 
 	function installQrCode() {
 		$(".cashier-qrcode").each(function(i, el) {
@@ -18,7 +27,7 @@
 			let visible=true;
 
 			for (let i in condition) {
-				console.log($(i).val());
+				//console.log($(i).val());
 				if ($(i).val()!=condition[i])
 					visible=false;
 			}
@@ -42,6 +51,8 @@
 
 		for (let expr of exprs)
 			$(expr).change(updateConditionalVisibility);
+
+		updateConditionalVisibility();
 	}
 
 	function installTxUi(openId) {
@@ -67,8 +78,6 @@
 	}
 
 	function refreshBalances() {
-		//console.log("refreshing");
-
 		let data={
 			action: "cashier-frontend",
 			call: "getCurrencyTexts",
@@ -78,6 +87,10 @@
 		if ($("#cashier-transaction-list").length)
 			data.renderTransactionList=true;
 
+		let lightningInvoice=$(".cashier-qrcode.lightning").attr("data-value");
+		if (lightningInvoice)
+			data.lightningInvoice=lightningInvoice;
+
 		$(window).trigger("cashier-pre-refresh-account",data);
 
 		$.ajax({
@@ -86,6 +99,7 @@
 			url: ajaxurl,
 			data: data,
 			success: function(res) {
+				console.log(res);
 				let openId=$(".cashier-tx-open-row:visible").attr("data-tx-id");
 				//console.log("got balance update, open: "+openId);
 
@@ -111,4 +125,5 @@
 	installTxUi();
 	installConditionalVisibility();
 	installQrCode();
+	installCopyOnClick();
 })(jQuery);

@@ -1,6 +1,6 @@
 <div class="row">
-	<div class="col-2"><b>Balance:</b></div>
-	<div class="col-2">
+	<div class="col-3 col-md-2"><b>Balance:</b></div>
+	<div class="col-4">
 		<span id="cashier-account-balance"
 				data-currency="<?php echo esc_attr($currencyId); ?>">
 			<?php echo esc_html($balanceText); ?>
@@ -8,7 +8,7 @@
 	</div>
 </div>
 <div class="row mb-3">
-	<div class="col-2"><b>Reserved:</b></div>
+	<div class="col-3 col-md-2"><b>Reserved:</b></div>
 	<div class="col-2">
 		<span id="cashier-account-reserved">
 			<?php echo esc_html($reservedText); ?>

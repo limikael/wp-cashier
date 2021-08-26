@@ -58,6 +58,11 @@ class ElectrumUser {
 
 	// Amount in satoshi.
 	public function generateLightningRequest($amount) {
+		if (!$amount) {
+			$this->setMeta("lightning_request",NULL);
+			return;
+		}
+
 		$electrum=$this->getElectrumClient();
 
 		$btcAmount=$amount/100000000;
@@ -72,6 +77,10 @@ class ElectrumUser {
 
 	public function getAccount() {
 		return Account::getUserAccount($this->user->ID,$this->currency->ID);
+	}
+
+	public function getCurrency() {
+		return $this->currency;
 	}
 
 	private function processNewTransactions() {
@@ -206,7 +215,7 @@ class ElectrumUser {
 		$t->perform();
 	}
 
-	public function process($params) {
+	public function process() {
 		if ($this->getAddress()) {
 			$this->processNewTransactions();
 			$this->processConfirmations();
@@ -215,40 +224,9 @@ class ElectrumUser {
 		if ($this->getLightningRequest()) {
 			$this->processLightningRequest();
 		}
-
-		if (isset($params["lightningInvoice"])) {
-			$account=$this->getAccount();
-
-			$txs=$account->getTransactions(array(
-				"meta%"=>"%".$params["lightningInvoice"]."%"
-			));
-
-			if (sizeof($txs)) {
-				$tx=$txs[0];
-				$t=new Template(__DIR__."/../tpl/paid-invoice.tpl.php");
-				$cover=$t->render(array(
-					"amount"=>"+".$tx->formatAmount()
-				));
-
-				return array(
-					"replaceWith"=>array(
-						".tphbtc-qrcode-cover"=>$cover
-					)
-				);
-			}
-		}
 	}
 
-	/*public static function getCurrentByCurrency($currencyId) {
-		$u=wp_get_current_user();
-
-		if (!$u || !$u->ID)
-			return NULL;
-
-		return CurrencyUser::getByCurrencyAndId($currencyId,$u->ID);
+	public static function getCurrent() {
+		return new ElectrumUser(Currency::getCurrent(),wp_get_current_user());
 	}
-
-	public static function getByCurrencyAndId($currencyId, $userId) {
-		return new CurrencyUser($currencyId,get_user_by("id",$userId));
-	}*/
 }

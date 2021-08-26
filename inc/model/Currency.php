@@ -51,8 +51,10 @@ class Currency extends ExtensiblePost {
 		return $amount;
 	}
 
-	public function processForCurrentUser() {
-		
+	public function process($user) {
+		$adapter=$this->getAdapter();
+		if (isset($adapter["process_cb"]) && $adapter["process_cb"])
+			return $adapter["process_cb"]($this,$user);
 	}
 
 	private static function toString($number) {

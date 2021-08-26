@@ -35,10 +35,10 @@ class JsonRpcClient {
 			curl_setopt($curl,CURLOPT_USERPWD,$this->options["userpwd"]);
 
 		$response=curl_exec($curl);
-		if ($response===FALSE)
-			throw new \Exception("Unable to reach JSON-RPC endpoint");
-
 		$responseCode=curl_getinfo($curl,CURLINFO_RESPONSE_CODE);
+
+		if ($response===FALSE)
+			throw new \Exception("Unable to reach JSON-RPC endpoint: ".$responseCode);
 
 		$decodedResponse=json_decode($response,TRUE);
 		if (!$decodedResponse)

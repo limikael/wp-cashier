@@ -5,8 +5,7 @@
 		</select>
 	</div>
 
-	<div style="display: none"
-			data-condition='{"#transaction-method":"lightning"}'>
+	<div data-condition='{"#transaction-method":"lightning"}'>
 		<div class="form-group">
 			<label class="form-label mt-4">
 				First generate an invoice. Then paste the invoice here.
@@ -39,7 +38,7 @@
 			<label class="form-label mt-4">
 				Minig fee to use
 			</label>
-			<select class="form-control" name="cashier-fee">
+			<select class="form-select" name="cashier-fee">
 				<?php cashier\HtmlUtil::displaySelectOptionsKeyLabel($feeOptions,$feeOptions[1]["key"]); ?>
 			</select>
 		</div>

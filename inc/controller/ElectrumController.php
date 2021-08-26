@@ -9,92 +9,82 @@ require_once __DIR__."/ElectrumUser.php";
 
 class ElectrumController extends Singleton {
 	protected function __construct() {
-		add_action("init",array($this,"init"));
+		add_action("wp",array($this,"wp"));
 	}
 
-	public function init() {
-		/*if (isset($_POST["tphbtc_lightning_amount"])) {
-			$user=CurrencyUser::getCurrentByCurrency($_REQUEST["currency"]);
-			$selectedAmount=intval($_POST["tphbtc_lightning_amount"]);
-			$user->generateLightningRequest($selectedAmount);
+	public function wp() {
+		$formHandlers=array(
+			"cashier-generate-lightning-invoice"=>array($this,"generateLightningInvoice"),
+			"cashier-withdraw-lightning"=>array($this,"withdrawLightning"),
+			"cashier-withdraw-onchain"=>array($this,"withdrawOnchain"),
+		);
 
-			wp_redirect(HtmlUtil::getCurrentUrl(),303);
-			exit();
+		$handler=NULL;
+		foreach ($formHandlers as $var=>$handler) {
+			if (isset($_POST[$var])) {
+				$electrumUser=ElectrumUser::getCurrent();
+				if (!$electrumUser)
+					throw new \Exception("Not logged in");
+
+				try {
+					$handler($electrumUser);
+				}
+
+				catch (\Exception $e) {
+					error_log(print_r($e,TRUE));
+					$this->notice($e->getMessage(),"error");
+					wp_redirect(HtmlUtil::getCurrentUrl(),303);
+					exit();
+				}
+			}
+		}
+	}
+
+	public function withdrawOnchain($electrumUser) {
+		$currency=$electrumUser->getCurrency();
+		$electrumUser->withdraw(
+			$_POST["cashier-address"],
+			$currency->parseInput($_POST["cashier-amount"]),
+			$_POST["cashier-fee"]
+		);
+
+		$this->notice("The withdrawal has been processed.");
+		$url=get_permalink($electrumUser->getCurrency()->ID);
+		wp_redirect($url,303);
+		exit();
+	}
+
+	public function withdrawLightning($electrumUser) {
+		$invoice=$_POST["cashier-request"];
+		$t=$electrumUser->createLightningWithdrawTransaction($invoice);
+		$this->notice("The withdrawal is processing.","info");
+
+		$url=get_permalink($electrumUser->getCurrency()->ID);
+		HtmlUtil::redirectAndContinue($url,303);
+
+		try {
+			$electrumUser->processLightningWithdrawTransaction($invoice,$t);
 		}
 
-		if (isset($_POST["tphbtc-withdraw-lightning"])) {
-			$plugin=TonopahBitcoinPlugin::instance();
-
-			try {
-				$user=CurrencyUser::getCurrentByCurrency($_REQUEST["currency"]);
-				$invoice=$_POST["tphbtc-request"];
-				$t=$user->createLightningWithdrawTransaction($invoice);
-				tonopah_api()->accountNotice("The withdrawal is processing.","info");
-			}
-
-			catch (\Exception $e) {
-				tonopah_api()->accountNotice($e->getMessage(),"error");
-				wp_redirect(HtmlUtil::getCurrentUrl(),303);
-				exit();
-			}
-
-			$url=add_query_arg(array(
-					"tab"=>NULL,
-				),
-				HtmlUtil::getCurrentUrl()
-			);
-
-			HtmlUtil::redirectAndContinue($url,303);
-
-			try {
-				$user->processLightningWithdrawTransaction($invoice,$t);
-			}
-
-			catch (\Exception $e) {
-				$t->fail($e->getMessage());
-			}
-
-			exit();
+		catch (\Exception $e) {
+			$t->fail($e->getMessage());
 		}
 
-		if (isset($_POST["tphbtc-withdraw"])) {
-			$plugin=TonopahBitcoinPlugin::instance();
+		exit();
+	}
 
-			try {
-				$user=CurrencyUser::getCurrentByCurrency($_REQUEST["currency"]);
-				$account=$user->getAccount();
-				$user->withdraw(
-					$_POST["tphbtc-address"],
-					$account->getCurrency()->parseInput($_POST["tphbtc-amount"]),
-					$_POST["tphbtc-fee"]
-				);
-				tonopah_api()->accountNotice("The withdrawal has been processed.");
-			}
+	public function generateLightningInvoice($electrumUser) {
+		$currency=$electrumUser->getCurrency();
+		$amount=$currency->parseInput($_POST["amount"]);
+		$electrumUser->generateLightningRequest($amount);
 
-			catch (\Exception $e) {
-				tonopah_api()->accountNotice($e->getMessage(),"error");
-			}
+		wp_redirect(HtmlUtil::getCurrentUrl(),303);
+		exit();
+	}
 
-			wp_redirect(HtmlUtil::getCurrentUrl(),303);
-			exit();
-		}
-
-		if (isset($_POST["tphbtc-generate-lightning-invoice"])) {
-			$plugin=TonopahBitcoinPlugin::instance();
-			try {
-				$user=CurrencyUser::getCurrentByCurrency($_REQUEST["currency"]);
-				$account=$user->getAccount();
-				$amount=$account->getCurrency()->parseInput($_POST["tphbtc-amount"]);
-				$user->generateLightningRequest($amount);
-			}
-
-			catch (\Exception $e) {
-				tonopah_api()->accountNotice($e->getMessage(),"error");
-			}
-
-			wp_redirect(HtmlUtil::getCurrentUrl(),303);
-			exit();
-		}*/
+	private function notice($message, $class="success") {
+		CashierPlugin::instance()->
+			getSessionNotices()->notice($message,$class);
 	}
 
 	public function getElectrumClient($currency) {
@@ -138,11 +128,17 @@ class ElectrumController extends Singleton {
 
 		$account=$electrumUser->getAccount();
 		$vars=array(
-			"address"=>$electrumUser->getAddress(),
-			"addressUrl"=>"bitcoin:".$electrumUser->getAddress(),
-			"invoice"=>NULL,
+			"lightningQr"=>NULL,
 			"amount"=>""
 		);
+
+		$qrT=new Template(__DIR__."/../tpl/qr.tpl.php");
+		$vars["onchainQr"]=$qrT->render(array(
+			"title"=>"Address",
+			"data"=>$electrumUser->getAddress(),
+			"url"=>"bitcoin:".$electrumUser->getAddress(),
+			"class"=>""
+		));
 
 		$vars["currencySymbol"]=$currency->getMeta("symbol");
 
@@ -158,8 +154,16 @@ class ElectrumController extends Singleton {
 			if (time()<$expires) {
 				$requestAmount=$request["amount_msat"]/1000;
 				$vars["amount"]=$account->getCurrency()->format($requestAmount,"string");
-				$vars["invoice"]=$request["invoice"];
-				$vars["invoiceUrl"]="lightning:".$request["invoice"];
+				$coverAmount=$account->getCurrency()->format($requestAmount);
+
+				$qrT=new Template(__DIR__."/../tpl/qr.tpl.php");
+				$vars["lightningQr"]=$qrT->render(array(
+					"title"=>"Invoice",
+					"data"=>$request["invoice"],
+					"url"=>"lightning:".$request["invoice"],
+					"coverAmount"=>"+".$coverAmount,
+					"class"=>"lightning"
+				));
 			}
 		}
 
@@ -199,11 +203,32 @@ class ElectrumController extends Singleton {
 		}
 	}
 
-	/*public function process($currencyId, $userId, $params) {
-		$user=CurrencyUser::getByCurrencyAndId($currencyId, $userId);
-		if (!$user)
-			throw new \Exception("User not found");
+	public function process($currency, $user) {
+		$electrumUser=new ElectrumUser($currency,$user);
+		$electrumUser->process();
 
-		return $user->process($params);
-	}*/
+		if (isset($_REQUEST["lightningInvoice"])) {
+			$account=$electrumUser->getAccount();
+
+			$txs=$account->getTransactions(array(
+				"meta%"=>"%".$_REQUEST["lightningInvoice"]."%"
+			));
+
+			if (sizeof($txs)) {
+				$tx=$txs[0];
+				$t=new Template(__DIR__."/../tpl/qr-paid-cover.tpl.php");
+				$cover=$t->render(array(
+					"amount"=>"+".$tx->formatAmount()
+				));
+
+				$selector=".cashier-qr-cover.lightning";
+
+				return array(
+					"replaceWith"=>array(
+						$selector=>$cover
+					)
+				);
+			}
+		}
+	}
 }

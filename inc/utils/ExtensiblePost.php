@@ -48,6 +48,21 @@ class ExtensiblePost {
 		}
 	}
 
+	public static function findMany($query=array()) {
+		$query["post_type"]=self::post_type();
+
+		if (!isset($query["numberposts"]))
+			$query["numberposts"]=-1;
+
+		$posts=get_posts($query);
+		$class=get_called_class();
+		$res=array();
+		foreach ($posts as $post)
+			$res[]=new $class($post);
+
+		return $res;
+	}
+
 	public static function post_type() {
 		$post_type=preg_replace('/^.*\\\\/','',get_called_class());
 		$post_type=strtolower($post_type);
@@ -55,7 +70,7 @@ class ExtensiblePost {
 		return $post_type;
 	}
 
-	public static function registerPostType($params=array()) {
+	public static function registerPostType($params=array(), $force=FALSE) {
 		$f=function() use ($params) {
 			$name=ucfirst(self::post_type());
 			$plural=StringUtil::plural($name);
@@ -80,7 +95,7 @@ class ExtensiblePost {
 			);
 		};
 
-		if (current_action()=="init")
+		if ($force || current_action()=="init")
 			$f();
 
 		else
@@ -187,7 +202,7 @@ class ExtensiblePost {
 	public static final function getCurrent() {
 		global $post;
 
-		if (!self::$current) {
+		if (!self::$current && $post) {
 			$class=get_called_class();
 			self::$current=new $class($post);
 		}

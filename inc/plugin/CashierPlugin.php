@@ -30,10 +30,27 @@ class CashierPlugin extends Singleton {
 		add_action("wp_enqueue_scripts",array($this,"enqueue_scripts"));
 		add_action("admin_enqueue_scripts",array($this,"enqueue_scripts"));
 		add_filter("cashier_adapters",array($this,"cashier_adapters"),10,1);
+		add_action("cashier_cron",array($this,"cashier_cron"));
+	}
+
+	public function cashier_cron() {
+		//error_log("Running cron... This is not an error...");
+		$userIds=get_users(array("fields"=>"ID"));
+		foreach (Currency::findMany() as $currency) {
+			foreach ($userIds as $userId) {
+				$user=get_user_by("ID",$userId);
+				$currency->process($user);
+			}
+		}
 	}
 
 	public function activate() {
 		Transaction::install();
+
+		Currency::registerPostType(array(),TRUE);
+		flush_rewrite_rules(false);
+
+		wp_schedule_event(time(),"hourly","cashier_cron");
 	}
 
 	public function enqueue_scripts() {
@@ -73,7 +90,8 @@ class CashierPlugin extends Singleton {
 				"deposit"=>"Deposit",
 				"withdraw"=>"Withdraw",
 			),
-			"tab_cb"=>array(ElectrumController::instance(),"tab")
+			"tab_cb"=>array(ElectrumController::instance(),"tab"),
+			"process_cb"=>array(ElectrumController::instance(),"process")
 		);
 
 		$adapters["playmoney"]=array(
