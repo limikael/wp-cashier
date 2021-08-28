@@ -31,6 +31,8 @@ class CashierPlugin extends Singleton {
 		add_action("wp_enqueue_scripts",array($this,"enqueue_scripts"));
 		add_action("admin_enqueue_scripts",array($this,"enqueue_scripts"));
 		add_action("cashier_cron",array($this,"cashier_cron"));
+
+		$this->notices=new SessionNotices("cashier_account_notices");
 	}
 
 	public function cashier_cron() {
@@ -97,9 +99,6 @@ class CashierPlugin extends Singleton {
 	}
 
 	public function getSessionNotices() {
-		if (!$this->notices)
-			$this->notices=new SessionNotices("cashier_account_notices");
-
 		return $this->notices;
 	}
 }

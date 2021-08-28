@@ -7,11 +7,12 @@ class SessionNotices {
 
 	public function __construct($sessionKey) {
 		$this->sessionKey=$sessionKey;
+
+		if (!session_id())
+			session_start();
 	}
 
 	public function notice($message, $class="success") {
-		if (!session_id())
-			session_start();
 
 		if ($class=="error")
 			$class="danger";
@@ -26,9 +27,6 @@ class SessionNotices {
 	}
 
 	public function renderNotices() {
-		if (!session_id())
-			session_start();
-
 		if (!array_key_exists($this->sessionKey,$_SESSION))
 			return;
 
