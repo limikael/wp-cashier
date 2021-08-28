@@ -50,12 +50,12 @@ class PlaymoneyController extends Singleton {
 					"tab"=>NULL,
 				),HtmlUtil::getCurrentUrl());
 
-				//error_log("redirecting...");
-				HtmlUtil::redirectAndContinue($url,303);
-
+				/*HtmlUtil::redirectAndContinue($url,303);
 				sleep(10);
-				//error_log("performing...");
+				$t->perform();*/
+
 				$t->perform();
+				wp_redirect(HtmlUtil::getCurrentUrl(),303);
 				exit();
 			}
 
