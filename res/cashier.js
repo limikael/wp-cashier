@@ -77,6 +77,13 @@
 		}
 	}
 
+	function sendBalanceUpdate(balance) {
+		window.top.postMessage({
+			type: "balanceUpdate",
+			balance: parseInt(balance)
+		});
+	}
+
 	function refreshBalances() {
 		let data={
 			action: "cashier-frontend",
@@ -109,6 +116,8 @@
 				for (let selector in res.replaceWith)
 					$(selector).replaceWith(res.replaceWith[selector]);
 
+				sendBalanceUpdate(res.balance);
+
 				installTxUi(openId);
 				setTimeout(refreshBalances,refreshRate);
 			},
@@ -119,8 +128,10 @@
 		});
 	}
 
-	if ($("#cashier-account-balance").length)
+	if ($("#cashier-account-balance").length) {
 		setTimeout(refreshBalances,refreshRate);
+		sendBalanceUpdate($("#cashier-account-balance").attr("data-balance"));
+	}
 
 	installTxUi();
 	installConditionalVisibility();

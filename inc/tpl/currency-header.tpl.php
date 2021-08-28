@@ -2,7 +2,8 @@
 	<div class="col-3 col-md-2"><b>Balance:</b></div>
 	<div class="col-4">
 		<span id="cashier-account-balance"
-				data-currency="<?php echo esc_attr($currencyId); ?>">
+				data-currency="<?php echo esc_attr($currencyId); ?>"
+				data-balance="<?php echo esc_attr($balance); ?>">
 			<?php echo esc_html($balanceText); ?>
 		</span>
 	</div>

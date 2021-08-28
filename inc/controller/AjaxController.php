@@ -45,6 +45,8 @@ class AjaxController extends AjaxHandler {
 			$response["replaceWith"]["#cashier-transaction-list"]=
 				CurrencyController::instance()->renderActivityTab($user, $currency);
 
+		$response["balance"]=$account->getBalance();
+
 		return $response;
 	}
 }

@@ -98,6 +98,7 @@ class CurrencyController extends Singleton {
 
 		$vars=array(
 			"tabs"=>$tabs,
+			"balance"=>$account->getBalance(),
 			"balanceText"=>$account->formatBalance(),
 			"reservedText"=>$currency->format($reservedAmount,"hyphenated"),
 			"currentTab"=>$currentTab,
