@@ -113,8 +113,10 @@ class ElectrumController extends Singleton {
 	}
 
 	public function getElectrumClient($currency) {
-		if (!isset($currecy->electrumClient))
-			$currency->electrumClient=new ElectrumClient($currency->getMeta("electrumUrl"));
+		if (!isset($currecy->electrumClient)) {
+			$url=StringUtil::envVarSubst($currency->getMeta("electrumUrl"));
+			$currency->electrumClient=new ElectrumClient($url);
+		}
 
 		return $currency->electrumClient;
 	}

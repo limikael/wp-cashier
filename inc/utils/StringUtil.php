@@ -9,4 +9,13 @@ class StringUtil {
 
 		return $s."s";
 	}
+
+	public static function envVarSubst($spec) {
+		if (substr($spec,0,1)=='$') {
+			$var=substr($spec,1);
+			return getenv($var);
+		}
+
+		return $spec;
+	}
 }
