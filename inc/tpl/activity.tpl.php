@@ -10,11 +10,8 @@
 		<tr class="<?php echo esc_attr($transaction["class"]);?> cashier-tx-closed-row"
 				data-tx-id="<?php echo esc_attr($transaction["id"]); ?>">
 			<td>
-				<a class="text-reset text-decoration-none stretched-link" href="#"
-						data-tx-id="<?php echo esc_attr($transaction["id"]); ?>">
-					<i class="bi <?php echo esc_attr($transaction["iconClass"]);?>"></i>
-					<?php echo esc_html($transaction["stamp"]); ?>
-				</a>
+				<i class="bi <?php echo esc_attr($transaction["iconClass"]);?>"></i>
+				<?php echo esc_html($transaction["stamp"]); ?>
 			</td>
 			<td>
 				<?php echo esc_html($transaction["entity"]); ?>
@@ -30,17 +27,16 @@
 		<tr class="<?php echo esc_attr($transaction["class"]);?> cashier-tx-open-row" style="display: none"
 				data-tx-id="<?php echo esc_attr($transaction["id"]); ?>">
 			<td colspan="4">
-				<a class="row text-reset text-decoration-none stretched-link" href="#"
-						data-tx-id="<?php echo esc_attr($transaction["id"]); ?>">
-					<?php foreach ($transaction["meta"] as $metaLabel=>$meta) { ?>
+				<?php foreach ($transaction["meta"] as $metaLabel=>$meta) { ?>
+					<div class="row">
 						<b class="col-3">
 							<?php echo esc_html($metaLabel); ?>:
 						</b>
-						<div class="col-9 multiline">
+						<div class="col-8 multiline">
 							<?php echo esc_html($meta); ?>
 						</div>
-					<?php } ?>
-				</a>
+					</div>
+				<?php } ?>
 			</td>
 		</tr>
 	<?php } ?>

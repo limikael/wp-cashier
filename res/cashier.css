@@ -2,6 +2,10 @@
 	table-layout: fixed;
 }
 
+.cashier-bs-table tr {
+	cursor: pointer;
+}
+
 .cashier-bs-table td,
 .cashier-bs-table th {
 	text-overflow: ellipsis;
@@ -12,10 +16,6 @@
 .cashier-bs-table .multiline {
 	white-space: normal;
 	word-break: break-word;
-}
-
-.cashier-bs-table tr {
-	transform: rotate(0);
 }
 
 .cashier-bs-table img {

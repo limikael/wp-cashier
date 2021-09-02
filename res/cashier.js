@@ -56,8 +56,8 @@
 	}
 
 	function installTxUi(openId) {
-		$(".cashier-tx-closed-row a").click(function(el) {
-			let id=el.target.dataset.txId;
+		$(".cashier-tx-closed-row").click(function() {
+			let id=$(this).attr("data-tx-id");
 			$(".cashier-tx-open-row").hide();
 			$(".cashier-tx-closed-row").show();
 			$(".cashier-tx-open-row[data-tx-id='"+id+"']").show();
@@ -65,7 +65,7 @@
 			return false;
 		});
 
-		$(".cashier-tx-open-row a").click(function(el) {
+		$(".cashier-tx-open-row").click(function() {
 			$(".cashier-tx-open-row").hide();
 			$(".cashier-tx-closed-row").show();
 			return false;
