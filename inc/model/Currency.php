@@ -35,7 +35,7 @@ class Currency extends ExtensiblePost {
 				break;
 
 			case "string":
-				return Currency::toString($dividedAmount);
+				return sprintf("%.{$this->getDecimals()}f",$dividedAmount);
 				break;
 
 			default:
