@@ -40,11 +40,19 @@ class ExtensiblePost {
 		update_post_meta($this->ID,$key,$value);
 	}
 
-	public static function findOne($id) {
-		if (!$id)
+	public static function findOne($p) {
+		if (!$p)
 			return NULL; 
 
-		$post=get_post($id);
+		if (is_array($p)) {
+			$res=self::findMany($p);
+			if (!$res)
+				return NULL;
+
+			return $res[0];
+		}
+
+		$post=get_post($p);
 		if ($post) {
 			$class=get_called_class();
 			return new $class($post);
