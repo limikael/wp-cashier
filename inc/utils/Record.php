@@ -183,7 +183,7 @@ class Record {
 		$conf=self::$classes[get_called_class()];
 
 		if (!$this->getPrimaryKeyValue())
-			throw new Exception("Can't delete, there is no id");
+			throw new \Exception("Can't delete, there is no id");
 
 		self::query(
 			"DELETE FROM :table WHERE $conf[primaryKey]=%s",
@@ -252,10 +252,10 @@ class Record {
 
 		$res=$wpdb->get_results($q,ARRAY_A);
 		if ($wpdb->last_error)
-			throw new Exception($wpdb->last_error);
+			throw new \Exception($wpdb->last_error);
 
 		if ($res===NULL)
-			throw new Exception("Unknown error");
+			throw new \Exception("Unknown error");
 
 		return $res;
 	}

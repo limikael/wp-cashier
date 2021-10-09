@@ -13,6 +13,9 @@ class ExtensiblePost {
 		if (!$post || get_class($post)!="WP_Post")
 			throw new \Exception("Must be created with a post");
 
+		if ($post->post_type!=self::post_type())
+			throw new \Exception("Wrong post type");
+
 		$this->post=$post;
 	}
 

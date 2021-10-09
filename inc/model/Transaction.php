@@ -32,7 +32,7 @@ class Transaction extends Record {
 		self::field("from_id","integer null");
 		self::field("to_type","varchar(8) null");
 		self::field("to_id","integer null");
-		self::field("currency","varchar(32) null");
+		self::field("currency","integer not null");
 		self::field("stamp","integer not null");
 		self::field("amount","integer not null");
 		self::field("notice","text not null");
