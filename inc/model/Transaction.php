@@ -143,6 +143,8 @@ class Transaction extends Record {
 
 		$this->status="complete";
 		$this->save();
+
+		$this->notifyAccounts();
 	}
 
 	public function reserve() {
@@ -167,6 +169,8 @@ class Transaction extends Record {
 
 		$this->status="reserved";
 		$this->save();
+
+		$this->notifyAccounts();
 	}
 
 	public function ignore() {
@@ -175,6 +179,8 @@ class Transaction extends Record {
 
 		$this->status="ignored";
 		$this->save();
+
+		$this->notifyAccounts();
 	}
 
 	public function fail($message) {
@@ -195,6 +201,16 @@ class Transaction extends Record {
 		$this->status="failed";
 		$this->setMeta("error",$message);
 		$this->save();
+
+		$this->notifyAccounts();
+	}
+
+	private function notifyAccounts() {
+		if ($this->getFromAccount())
+			$this->getFromAccount()->notify();
+
+		if ($this->getToAccount())
+			$this->getToAccount()->notify();
 	}
 
 	public function getAmount() {
@@ -223,10 +239,10 @@ class Transaction extends Record {
 		$this->meta=serialize($metas);
 	}
 
-	public static function getLock() {
+	/*public static function getLock() {
 		if (!self::$lock)
 			self::$lock=new WpdbTableLock(self::getFullTableName());
 
 		return self::$lock;
-	}
+	}*/
 }

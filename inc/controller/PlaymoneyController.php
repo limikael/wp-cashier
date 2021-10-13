@@ -37,7 +37,8 @@ class PlaymoneyController extends Singleton {
 			$account=Account::getUserAccount($user->ID,$currency->ID);
 			$reservedAmount=$account->getReserved();
 			$replenish=intval($currency->getMeta("replenish"));
-			$topupAmount=$replenish-$account->getBalance()-$reservedAmount;
+			//$topupAmount=$replenish-$account->getBalance()-$reservedAmount;
+			$topupAmount=1000;
 
 			if ($topupAmount>0) {
 				$t=$account->createDepositTransaction($topupAmount);

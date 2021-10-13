@@ -16,6 +16,58 @@ class CurrencyController extends Singleton {
 		Currency::removeRowActions(array("quick-edit"));
 		Currency::useCleanSaveForm();
 		Currency::setupMessages();
+
+		add_filter("sse_init",array($this,"sse_init"));
+		add_filter("sse_data",array($this,"sse_data"),10,2);
+		add_filter("sse_ping",array($this,"sse_ping"));
+	}
+
+	public function sse_ping($data) {
+		if (isset($_REQUEST["currency"])) {
+			$user=wp_get_current_user();
+			$account=Account::getUserAccount($user->id,$_REQUEST["currency"]);
+			$currency=$account->getCurrency();
+			return $currency->process($user);
+		}
+	}
+
+	public function sse_init($channels) {
+		if (isset($_REQUEST["currency"])) {
+			$uid=get_current_user_id();
+			$account=Account::getUserAccount($uid,$_REQUEST["currency"]);
+			$channels[]=$account->getEventChannel();
+		}
+
+		return $channels;
+	}
+
+	public function sse_data($data, $key) {
+		$user=wp_get_current_user();
+		$account=Account::getUserAccount($user->id,$_REQUEST["currency"]);
+
+		if ($key==$account->getEventChannel()) {
+			$currency=$account->getCurrency();
+
+			$response=array();
+			$response["text"]=array();
+			$response["replaceWith"]=array();
+
+			$response["text"]["#cashier-account-balance"]=
+				$account->formatBalance();
+
+			$reservedAmount=$account->getReserved();
+			$response["text"]["#cashier-account-reserved"]=
+				$currency->format($reservedAmount,"hyphenated");
+
+			$response["replaceWith"]["#cashier-transaction-list"]=
+				CurrencyController::instance()->renderActivityTab($user, $currency);
+
+			$response["balance"]=$account->getBalance();
+
+			return $response;
+		}
+
+		return $data;
 	}
 
 	public function createInputFieldCollection() {

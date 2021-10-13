@@ -219,4 +219,15 @@ class Account {
 	public function formatBalance($style="standard") {
 		return $this->currency->format($this->getBalance(),$style);
 	}
+
+	public function getEventChannel() {
+		return "account_".$this->currency->ID."_".$this->entityType."_".$this->entityId;
+	}
+
+	public function notify() {
+		//error_log($this->getEventChannel());
+
+		$revServer=CashierPlugin::instance()->getRevServer();
+		$revServer->notify($this->getEventChannel());
+	}
 }

@@ -191,6 +191,8 @@ class ElectrumController extends Singleton {
 					"coverAmount"=>"+".$coverAmount,
 					"class"=>"lightning"
 				));
+
+				$vars["lightningInvoice"]=$request["invoice"];
 			}
 		}
 

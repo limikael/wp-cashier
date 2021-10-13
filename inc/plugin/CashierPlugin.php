@@ -5,6 +5,7 @@ namespace cashier;
 require_once __DIR__."/CashierApi.php";
 require_once __DIR__."/../utils/Singleton.php";
 require_once __DIR__."/../utils/SessionNotices.php";
+require_once __DIR__."/../utils/RevServer.php";
 require_once __DIR__."/../model/Currency.php";
 require_once __DIR__."/../model/Transaction.php";
 require_once __DIR__."/../controller/CurrencyController.php";
@@ -22,6 +23,7 @@ class CashierPlugin extends Singleton {
 		AjaxController::instance();
 		ElectrumController::instance();
 		PlaymoneyController::instance();
+		//EventController::instance();
 
 		$this->data=get_file_data(CASHIER_PATH."/wp-cashier.php",array(
 			'Version'=>'Version',
@@ -33,6 +35,11 @@ class CashierPlugin extends Singleton {
 		add_action("cashier_cron",array($this,"cashier_cron"));
 
 		$this->notices=new SessionNotices("cashier_account_notices");
+
+		$dir=sys_get_temp_dir()."/rev-".sanitize_title(get_bloginfo("url"));
+		$this->revServer=new RevServer($dir);
+		$this->revServer->setTimeout(10);
+		$this->revServer->initAjax("events");
 	}
 
 	public function cashier_cron() {
@@ -100,5 +107,9 @@ class CashierPlugin extends Singleton {
 
 	public function getSessionNotices() {
 		return $this->notices;
+	}
+
+	public function getRevServer() {
+		return $this->revServer;
 	}
 }

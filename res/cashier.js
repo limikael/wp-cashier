@@ -1,7 +1,4 @@
 (function($) {
-	let refreshRate=10000;
-	//let refreshRate=0;
-
 	function installCopyOnClick() {
 		$("[data-copy-on-click]").click(function(e) {
 			let data=$(this).attr("data-copy-on-click");
@@ -77,64 +74,65 @@
 		}
 	}
 
-	function sendBalanceUpdate(balance) {
-		window.top.postMessage({
-			type: "balanceUpdate",
-			balance: parseInt(balance)
-		});
-	}
+	function installEventSource() {
+		window.setEventSourceParams=function(param, value) {
+			if (!window.eventSourceParams)
+				window.eventSourceParams={};
 
-	function refreshBalances() {
-		let data={
-			action: "cashier-frontend",
-			call: "getCurrencyTexts",
-			currency: $("#cashier-account-balance").attr("data-currency")
-		};
+			window.eventSourceParams[param]=value;
+		}
 
-		if ($("#cashier-transaction-list").length)
-			data.renderTransactionList=true;
+		$(document).ready(function() {
+			$(".event-source-param").each(function() {
+				window.setEventSourceParams($(this).attr("name"),$(this).val());
+			});
 
-		let lightningInvoice=$(".cashier-qrcode.lightning").attr("data-value");
-		if (lightningInvoice)
-			data.lightningInvoice=lightningInvoice;
+			if (!Object.keys(window.eventSourceParams).length)
+				return;
 
-		$(window).trigger("cashier-pre-refresh-account",data);
+			var buildUrl = function(base, key, value) {
+				var sep = (base.indexOf('?') > -1) ? '&' : '?';
+				return base + sep + key + '=' + encodeURIComponent(value);
+			};
 
-		$.ajax({
-			type: "GET",
-			dataType: "json",
-			url: ajaxurl,
-			data: data,
-			success: function(res) {
-				console.log(res);
-				let openId=$(".cashier-tx-open-row:visible").attr("data-tx-id");
-				//console.log("got balance update, open: "+openId);
+			let url=window.ajaxurl;
+			url=buildUrl(url,"action","events");
 
-				for (let selector in res.text)
-					$(selector).text(res.text[selector]);
+			for (let paramName in window.eventSourceParams)
+				url=buildUrl(url,paramName,window.eventSourceParams[paramName]);
 
-				for (let selector in res.replaceWith)
-					$(selector).replaceWith(res.replaceWith[selector]);
+			let es=new EventSource(url);
+			es.onmessage=function(messageEvent) {
+				console.log("sse event...");
 
-				sendBalanceUpdate(res.balance);
-
-				installTxUi(openId);
-				setTimeout(refreshBalances,refreshRate);
-			},
-			error: function(e) {
-				console.log(e);
-				setTimeout(refreshBalances,refreshRate);
+				let data=JSON.parse(messageEvent.data);
+				window.postMessage(data);
 			}
 		});
 	}
 
-	if ($("#cashier-account-balance").length) {
-		setTimeout(refreshBalances,refreshRate);
-		sendBalanceUpdate($("#cashier-account-balance").attr("data-balance"));
+	function processJqueryReplacements(res) {
+		if (res.text)
+			for (let selector in res.text)
+				$(selector).text(res.text[selector]);
+
+		if (res.replaceWith)
+			for (let selector in res.replaceWith)
+				$(selector).replaceWith(res.replaceWith[selector]);
 	}
 
-	installTxUi();
+	function installEventSourceListener() {
+		window.addEventListener("message",function(ev) {
+			let openId=$(".cashier-tx-open-row:visible").attr("data-tx-id");
+			processJqueryReplacements(ev.data);
+			installTxUi(openId);
+		});
+	}
+
 	installConditionalVisibility();
 	installQrCode();
 	installCopyOnClick();
+	installTxUi();
+	installEventSource();
+	installEventSourceListener();
 })(jQuery);

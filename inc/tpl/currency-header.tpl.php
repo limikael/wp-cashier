@@ -34,3 +34,5 @@
 		</li>
 	<?php } ?>
 </ul>
+
+<input type="hidden" class="event-source-param" name="currency" value="<?php echo esc_attr($currencyId); ?>"/>

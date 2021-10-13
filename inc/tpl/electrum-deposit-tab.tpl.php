@@ -24,9 +24,6 @@
 		</div>
 
 		<?php if ($lightningQr) { ?>
-			<?php /*<script>
-				window.lightningInvoice="<?php echo esc_js($invoice); ?>";
-			</script> */?>
 			<?php echo $lightningQr; ?>
 		<?php } ?>
 	</div>
@@ -36,3 +33,7 @@
 		<?php echo $onchainQr; ?>
 	</div>
 </form>
+
+<?php if (isset($lightningInvoice)) { ?>
+	<input type="hidden" class="event-source-param" name="lightningInvoice" value="<?php echo esc_attr($lightningInvoice); ?>"/>
+<?php } ?>
