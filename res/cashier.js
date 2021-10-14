@@ -87,7 +87,8 @@
 				window.setEventSourceParams($(this).attr("name"),$(this).val());
 			});
 
-			if (!Object.keys(window.eventSourceParams).length)
+			if (!window.eventSourceParams ||
+					!Object.keys(window.eventSourceParams).length)
 				return;
 
 			var buildUrl = function(base, key, value) {

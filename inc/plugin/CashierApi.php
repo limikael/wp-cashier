@@ -14,4 +14,8 @@ class CashierApi extends Singleton {
 	public function getCurrency($p) {
 		return Currency::findOne($p);
 	}
+
+	public function getRevServer() {
+		return CashierPlugin::instance()->getRevServer();
+	}
 }

@@ -34,14 +34,19 @@ class CurrencyController extends Singleton {
 	public function sse_init($channels) {
 		if (isset($_REQUEST["currency"])) {
 			$uid=get_current_user_id();
-			$account=Account::getUserAccount($uid,$_REQUEST["currency"]);
-			$channels[]=$account->getEventChannel();
+			if ($uid) {
+				$account=Account::getUserAccount($uid,$_REQUEST["currency"]);
+				$channels[]=$account->getEventChannel();
+			}
 		}
 
 		return $channels;
 	}
 
 	public function sse_data($data, $key) {
+		if (!is_user_logged_in())
+			return $data;
+
 		$user=wp_get_current_user();
 		$account=Account::getUserAccount($user->id,$_REQUEST["currency"]);
 
