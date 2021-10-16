@@ -5,7 +5,7 @@
  * Plugin Name:       Cashier
  * Plugin URI:        https://github.com/limikael/wp-cashier
  * Description:       Custodial Accounts.
- * Version:           0.0.7
+ * Version:           0.0.8
  * Requires at least: 5.2
  * Requires PHP:      7.2
  * Author:            Mikael Lindqvist
