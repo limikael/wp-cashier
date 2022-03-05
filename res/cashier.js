@@ -74,42 +74,32 @@
 		}
 	}
 
-	function installEventSource() {
-		window.setEventSourceParams=function(param, value) {
-			if (!window.eventSourceParams)
-				window.eventSourceParams={};
+	function buildUrl(base, key, value) {
+		let sep = (base.indexOf('?') > -1) ? '&' : '?';
+		return base + sep + key + '=' + encodeURIComponent(value);
+	}
 
-			window.eventSourceParams[param]=value;
+	function installEventSource() {
+		if (window.cashierEventSource) {
+			window.cashierEventSource.close();
+			window.cashierEventSource=null;
 		}
 
-		$(document).ready(function() {
-			$(".event-source-param").each(function() {
-				window.setEventSourceParams($(this).attr("name"),$(this).val());
-			});
+		if (!$(".event-source-param").length)
+			return;
 
-			if (!window.eventSourceParams ||
-					!Object.keys(window.eventSourceParams).length)
-				return;
-
-			var buildUrl = function(base, key, value) {
-				var sep = (base.indexOf('?') > -1) ? '&' : '?';
-				return base + sep + key + '=' + encodeURIComponent(value);
-			};
-
-			let url=window.ajaxurl;
-			url=buildUrl(url,"action","events");
-
-			for (let paramName in window.eventSourceParams)
-				url=buildUrl(url,paramName,window.eventSourceParams[paramName]);
-
-			let es=new EventSource(url);
-			es.onmessage=function(messageEvent) {
-				console.log("sse event...");
-
-				let data=JSON.parse(messageEvent.data);
-				window.postMessage(data);
-			}
+		url=buildUrl(window.ajaxurl,"action","events");
+		$(".event-source-param").each(function() {
+			url=buildUrl(url,$(this).attr("name"),$(this).val());
 		});
+
+		window.cashierEventSource=new EventSource(url);
+		window.cashierEventSource.onmessage=function(messageEvent) {
+			//console.log("sse event...");
+
+			let data=JSON.parse(messageEvent.data);
+			window.postMessage(data);
+		}
 	}
 
 	function processJqueryReplacements(res) {
@@ -122,18 +112,28 @@
 				$(selector).replaceWith(res.replaceWith[selector]);
 	}
 
-	function installEventSourceListener() {
-		window.addEventListener("message",function(ev) {
-			let openId=$(".cashier-tx-open-row:visible").attr("data-tx-id");
-			processJqueryReplacements(ev.data);
-			installTxUi(openId);
-		});
+	function handleEventSourceMessage(ev) {
+		//console.log("event source message");
+
+		let openId=$(".cashier-tx-open-row:visible").attr("data-tx-id");
+		processJqueryReplacements(ev.data);
+		installTxUi(openId);
 	}
 
-	installConditionalVisibility();
-	installQrCode();
-	installCopyOnClick();
-	installTxUi();
-	installEventSource();
-	installEventSourceListener();
+	function installEventSourceListener() {
+		window.removeEventListener("message",handleEventSourceMessage);
+		window.addEventListener("message",handleEventSourceMessage);
+	}
+
+	function installCashierComponents() {
+		installConditionalVisibility();
+		installQrCode();
+		installCopyOnClick();
+		installTxUi();
+		installEventSource();
+		installEventSourceListener();
+	}
+
+	window.addEventListener("reload",installCashierComponents);
+	installCashierComponents();
 })(jQuery);
