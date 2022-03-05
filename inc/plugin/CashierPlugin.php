@@ -20,10 +20,9 @@ class CashierPlugin extends Singleton {
 
 	protected function __construct() {
 		CurrencyController::instance();
-		AjaxController::instance();
+		//AjaxController::instance();
 		ElectrumController::instance();
 		PlaymoneyController::instance();
-		//EventController::instance();
 
 		$this->data=get_file_data(CASHIER_PATH."/wp-cashier.php",array(
 			'Version'=>'Version',

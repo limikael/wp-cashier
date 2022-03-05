@@ -186,9 +186,25 @@ class Account {
 		);
 	}
 
+	public function getTransactionCount($params=array()) {
+		$params["currency"]=$this->getCurrencyId();
+		$params[]=array(
+			array(
+				"from_type"=>$this->entityType,
+				"from_id"=>$this->entityId,
+			),
+
+			array(
+				"to_type"=>$this->entityType,
+				"to_id"=>$this->entityId,
+			),
+		);
+
+		return Transaction::getCount($params);
+	}
+
 	public function getTransactions($params=array()) {
 		$params["currency"]=$this->getCurrencyId();
-
 		$params[]=array(
 			array(
 				"from_type"=>$this->entityType,

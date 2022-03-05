@@ -65,7 +65,7 @@ class CurrencyController extends Singleton {
 				$currency->format($reservedAmount,"hyphenated");
 
 			$response["replaceWith"]["#cashier-transaction-list"]=
-				CurrencyController::instance()->renderActivityTab($user, $currency);
+				CurrencyController::instance()->renderActivityTab($user,$currency,$_REQUEST);
 
 			$response["balance"]=$account->getBalance();
 
@@ -167,7 +167,7 @@ class CurrencyController extends Singleton {
 		$content=$t->render($vars);
 
 		if ($currentTab=="activity")
-			$content.=$this->renderActivityTab($user,$currency);
+			$content.=$this->renderActivityTab($user,$currency,$_REQUEST);
 
 		else
 			$content.=$adapter["tab_cb"]($currentTab,$currency,$user);
@@ -175,12 +175,26 @@ class CurrencyController extends Singleton {
 		return $content;
 	}
 
-	public function renderActivityTab($user, $currency) {
+	public function renderActivityTab($user, $currency, $req) {
 		$account=Account::getUserAccount($user->ID,$currency->ID);
+
+		$activityPage=0;
+		if (array_key_exists("activityPage",$req))
+			$activityPage=$req["activityPage"];
+
+		$perPage=20;
+		$numTransactions=$account->getTransactionCount();
+		$numPages=max(1,ceil($numTransactions/$perPage));
+		if ($activityPage<0)
+			$activityPage=0;
+		if ($activityPage>=$numPages)
+			$activityPage=$numPages-1;
 
 		$transactions=$account->getTransactions(array(
 			"status!"=>"ignored",
-			"order by stamp desc"
+			"order by stamp desc",
+			"limit ".intval($perPage),
+			"offset ".intval($activityPage*$perPage)
 		));
 
 		$transactionViews=array();
@@ -230,7 +244,10 @@ class CurrencyController extends Singleton {
 		}
 
 		$vars=array(
-			"transactions"=>$transactionViews
+			"transactions"=>$transactionViews,
+			"numPages"=>$numPages,
+			"pageLink"=>get_post_permalink($currency->ID),
+			"activityPage"=>$activityPage
 		);
 
 		$t=new Template(__DIR__."/../tpl/activity.tpl.php");

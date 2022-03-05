@@ -195,6 +195,17 @@ class Record {
 	}
 
 	/**
+	 *
+	 */
+	public static final function getCount($params=array()) {
+		$qbe=new Qbe($params);
+		$q="SELECT COUNT(*) AS count FROM :table WHERE ".$qbe->getClause();
+		$queryRows=self::query($q,...$qbe->getParams());
+
+		return $queryRows[0]["count"];
+	}
+
+	/**
 	 * Find all by value.
 	 */
 	public static final function findMany($params=array()) {
