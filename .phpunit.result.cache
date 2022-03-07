@@ -1,1 +1,0 @@
-{"version":1,"defects":{"Warning":6,"MyTest::test_bla":4,"RecordTest::test_works":4},"times":{"Warning":0.004,"StringUtilTest::test_works":0,"MyTest::test_bla":0.129,"RecordTest::test_works":0.004}}
