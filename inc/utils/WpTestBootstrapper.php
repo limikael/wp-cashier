@@ -12,6 +12,9 @@ class WpTestBootstrapper {
 
 		if (!$this->options["dbpass"])
 			throw new \Exeption("Database pass not specified.");
+
+		if (!$this->options["wpdir"])
+			throw new \Exeption("Need a WordPress dir.");
 	}
 
 	public function log($message) {
