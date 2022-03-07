@@ -2,9 +2,7 @@
 
 require_once __DIR__."/../../../inc/utils/Record.php";
 
-use PHPUnit\Framework\TestCase;
 use cashier\Record;
-use Brain\Monkey;
 
 class TestRecord extends Record {
 	static function initialize() {
@@ -17,17 +15,7 @@ class TestRecord extends Record {
 /**
  * Sample test case.
  */
-class RecordTest extends TestCase {
-	protected function setUp():void {
-		parent::setUp();
-		Monkey\setUp();
-	}
-
-	protected function tearDown():void {
-		Monkey\tearDown();
-		parent::tearDown();
-	}
-
+class RecordTest extends WP_UnitTestCase {
 	public function test_works() {
 		TestRecord::install();
 
