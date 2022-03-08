@@ -14,7 +14,7 @@ class ExtensiblePost {
 			throw new \Exception("Must be created with a post");
 
 		if ($post->post_type!=self::post_type())
-			throw new \Exception("Wrong post type");
+			throw new \Exception("Wrong post type, ".$post->post_type." is not ".self::post_type());
 
 		$this->post=$post;
 	}
