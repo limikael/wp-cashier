@@ -197,11 +197,22 @@ class Transaction extends Record {
 		}
 
 		$this->amount=$newAmount;
+		$this->save();
+
+		$this->notifyAccounts();
 	}
 
 	public function ignore() {
+		$ok=FALSE;
+
+		if ($this->getStatus()=="reserved" && $this->getAmount()==0)
+			$ok=TRUE;
+
 		if ($this->getStatus()!="new")
-			throw new \Exception("Can only ignore new tx.");
+			$ok=TRUE;
+
+		if (!$ok)
+			throw new \Exception("Can't ignore this tx.");
 
 		$this->status="ignored";
 		$this->save();
@@ -240,7 +251,7 @@ class Transaction extends Record {
 	}
 
 	public function getAmount() {
-		return $this->amount;
+		return intval($this->amount);
 	}
 
 	public function getMetas() {
@@ -263,6 +274,16 @@ class Transaction extends Record {
 		$metas=$this->getMetas();
 		$metas[$key]=$value;
 		$this->meta=serialize($metas);
+	}
+
+	public static function findOneByMeta($key, $value) {
+		$txs=self::findMany(array(
+			"meta%"=>"%$value%"
+		));
+
+		foreach ($txs as $tx)
+			if ($tx->getMeta($key)==$value)
+				return $tx;
 	}
 
 	/*public static function getLock() {

@@ -4,7 +4,6 @@ namespace cashier;
 
 class InputFieldCollection {
 	private $fields;
-	private $loadedPostId;
 
 	public function __construct() {
 		$this->fields=[];
