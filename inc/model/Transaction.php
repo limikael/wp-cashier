@@ -129,6 +129,9 @@ class Transaction extends Record {
 		if ($this->getStatus()=="new")
 			$this->reserve();
 
+		if (intval($this->amount)==0)
+			throw new \Exception("Zero transaction amount.");
+
 		$toAccount=$this->getToAccount();
 		if ($toAccount) {
 			$toAccount->setBalance($toAccount->getBalance()+$this->amount);
@@ -151,8 +154,8 @@ class Transaction extends Record {
 		if ($this->getStatus()!="new")
 			throw new \Exception("Can only reserve new tx.");
 
-		if (intval($this->amount)<=0)
-			throw new \Exception("No transaction amount.");
+		if (intval($this->amount)<0)
+			throw new \Exception("Negative transaction amount.");
 
 		$fromAccount=$this->getFromAccount();
 		if ($fromAccount) {
@@ -171,6 +174,29 @@ class Transaction extends Record {
 		$this->save();
 
 		$this->notifyAccounts();
+	}
+
+	public function updateReservedAmount($newAmount) {
+		if ($this->getStatus()!="reserved")
+			throw new \Exception("Tx is not reserved");
+
+		if ($newAmount<$this->amount)
+			throw new \Exception("New amount is smaller than current");
+
+		if ($newAmount<=0)
+			throw new \Exception("New amount must be positive");
+
+		$fromAccount=$this->getFromAccount();
+		if ($fromAccount) {
+			$diff=$newAmount-$this->amount;
+
+			if ($fromAccount->getBalance()<$diff)
+				throw new \Exception("Insufficient funds.");
+
+			$fromAccount->setBalance($fromAccount->getBalance()-$diff);
+		}
+
+		$this->amount=$newAmount;
 	}
 
 	public function ignore() {

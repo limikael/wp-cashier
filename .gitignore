@@ -1,2 +1,6 @@
-vendor
-attic
+/vendor/
+/attic/
+/tests/support/wordpress.zip
+/tests/support/wordpress.sql
+/tests/support/wordpress/
+.phpunit.result.cache
