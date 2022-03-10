@@ -53,6 +53,10 @@
 	}
 
 	function installTxUi(openId) {
+		$(".cashier-link-row").click(function(e) {
+			$(this).find("a")[0].click();
+		});
+
 		$(".cashier-tx-closed-row").click(function() {
 			let id=$(this).attr("data-tx-id");
 			$(".cashier-tx-open-row").hide();

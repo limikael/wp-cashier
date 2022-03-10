@@ -47,3 +47,7 @@ img.cashier-qrcode {
 .cashier-qr-icon {
 	font-size: 8rem;
 }
+
+#um_account_submit_balance {
+	display: none;
+}

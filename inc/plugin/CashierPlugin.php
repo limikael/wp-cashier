@@ -12,6 +12,7 @@ require_once __DIR__."/../controller/CurrencyController.php";
 require_once __DIR__."/../controller/PlaymoneyController.php";
 require_once __DIR__."/../controller/ElectrumController.php";
 require_once __DIR__."/../controller/AjaxController.php";
+require_once __DIR__."/../controller/UmController.php";
 
 class CashierPlugin extends Singleton {
 	private $data;
@@ -20,7 +21,7 @@ class CashierPlugin extends Singleton {
 
 	protected function __construct() {
 		CurrencyController::instance();
-		//AjaxController::instance();
+		UmController::instance();
 		ElectrumController::instance();
 		PlaymoneyController::instance();
 
