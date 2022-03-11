@@ -54,7 +54,8 @@
 
 	function installTxUi(openId) {
 		$(".cashier-link-row").click(function(e) {
-			$(this).find("a")[0].click();
+			if ($(e.target).prop("tagName")!="A")
+				$(this).find("a")[0].click();
 		});
 
 		$(".cashier-tx-closed-row").click(function() {
