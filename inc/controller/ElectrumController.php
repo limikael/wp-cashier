@@ -7,6 +7,9 @@ require_once __DIR__."/../utils/Template.php";
 require_once __DIR__."/../utils/ElectrumClient.php";
 require_once __DIR__."/ElectrumUser.php";
 
+// API: curl "https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=bitcoin"
+// https://api.coingecko.com/api/v3/exchange_rates
+
 class ElectrumController extends Singleton {
 	protected function __construct() {
 		add_action("wp",array($this,"wp"));
@@ -30,11 +33,26 @@ class ElectrumController extends Singleton {
 				"deposit"=>"Deposit",
 				"withdraw"=>"Withdraw",
 			),
-			"tab_cb"=>array(ElectrumController::instance(),"tab"),
-			"process_cb"=>array(ElectrumController::instance(),"process")
+			"tab_cb"=>array($this,"tab"),
+			"process_cb"=>array($this,"process"),
+			"import_rates_cb"=>array($this,"importRates")
 		);
 
 		return $adapters;
+	}
+
+	public function importRates($currency) {
+		$curl=curl_init("https://api.coingecko.com/api/v3/exchange_rates");
+		curl_setopt($curl,CURLOPT_RETURNTRANSFER,1);
+		$data=json_decode(curl_exec($curl),TRUE);
+		if (!$data)
+			throw new \Exception("Unable to import rates");
+
+		$rateMeta=array();
+		foreach ($data["rates"] as $k=>$rateData)
+			$rateMeta[$k]=$rateData["value"]/100000000;
+
+		$currency->setMeta("rates",$rateMeta);
 	}
 
 	public function wp() {

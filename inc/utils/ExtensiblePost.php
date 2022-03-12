@@ -223,4 +223,12 @@ class ExtensiblePost {
 
 		return self::$current;
 	}
+
+	public static function create() {
+		$postId=wp_insert_post(array(
+			"post_type"=>self::post_type()
+		));
+
+		return self::findOne($postId);
+	}
 }

@@ -51,6 +51,11 @@ class CashierPlugin extends Singleton {
 				$currency->process($user);
 			}
 		}
+
+		foreach (Currency::findMany() as $currency) {
+			if ($currency->hasSupport("rates"))
+				$currency->importRates();
+		}
 	}
 
 	public function activate() {

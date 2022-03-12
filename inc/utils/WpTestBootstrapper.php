@@ -15,6 +15,9 @@ class WpTestBootstrapper {
 
 		if (!$this->options["wpdir"])
 			throw new \Exeption("Need a WordPress dir.");
+
+		if (!array_key_exists("install",$this->options))
+			$this->options["install"]=TRUE;
 	}
 
 	public function log($message) {
@@ -31,56 +34,58 @@ class WpTestBootstrapper {
 	}
 
 	private function run() {
-		$this->system(sprintf(
-			'echo "drop database if exists %s; create database %s" | mysql -u%s -p%s',
-			$this->options["db"],
-			$this->options["db"],
-			$this->options["dbuser"],
-			$this->options["dbpass"]
-		));
-
-		$this->system(sprintf('rm -f %s/wp-config.php',
-			$this->options["wpdir"],
-		));
-
-		$this->system(sprintf(
-			'wp --path=%s config create --dbname=%s --dbuser=%s --dbpass=%s',
-			$this->options["wpdir"],
-			$this->options["db"],
-			$this->options["dbuser"],
-			$this->options["dbpass"]
-		));
-
-		if (file_exists($this->options["dbfile"])) {
-			$this->log("Importing data from file...");
+		if ($this->options["install"]) {
 			$this->system(sprintf(
-				'mysql -u%s -p%s %s < %s',
-				$this->options["dbuser"],
-				$this->options["dbpass"],
+				'echo "drop database if exists %s; create database %s" | mysql -u%s -p%s',
 				$this->options["db"],
-				$this->options["dbfile"]
+				$this->options["db"],
+				$this->options["dbuser"],
+				$this->options["dbpass"]
 			));
-		}
 
-		else {
-			$this->log("Installing...");
-			$this->system(sprintf(
-				'wp --path=%s core install --url=%s --title=%s --admin_user=%s --admin_email=%s',
+			$this->system(sprintf('rm -f %s/wp-config.php',
 				$this->options["wpdir"],
-				"http://localhost",
-				"Test",
-				"admin",
-				"admin@example.com",
-				"admin"
 			));
 
 			$this->system(sprintf(
-				'mysqldump -u%s -p%s %s > %s',
-				$this->options["dbuser"],
-				$this->options["dbpass"],
+				'wp --path=%s config create --dbname=%s --dbuser=%s --dbpass=%s',
+				$this->options["wpdir"],
 				$this->options["db"],
-				$this->options["dbfile"]
+				$this->options["dbuser"],
+				$this->options["dbpass"]
 			));
+
+			if (file_exists($this->options["dbfile"])) {
+				$this->log("Importing data from file...");
+				$this->system(sprintf(
+					'mysql -u%s -p%s %s < %s',
+					$this->options["dbuser"],
+					$this->options["dbpass"],
+					$this->options["db"],
+					$this->options["dbfile"]
+				));
+			}
+
+			else {
+				$this->log("Installing...");
+				$this->system(sprintf(
+					'wp --path=%s core install --url=%s --title=%s --admin_user=%s --admin_email=%s',
+					$this->options["wpdir"],
+					"http://localhost",
+					"Test",
+					"admin",
+					"admin@example.com",
+					"admin"
+				));
+
+				$this->system(sprintf(
+					'mysqldump -u%s -p%s %s > %s',
+					$this->options["dbuser"],
+					$this->options["dbpass"],
+					$this->options["db"],
+					$this->options["dbfile"]
+				));
+			}
 		}
 
 		require $this->options["wpdir"]."/wp-load.php";

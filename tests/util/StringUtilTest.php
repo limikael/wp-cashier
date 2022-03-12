@@ -1,6 +1,6 @@
 <?php
 
-require_once __DIR__."/../../../inc/utils/StringUtil.php";
+require_once __DIR__."/../../inc/utils/StringUtil.php";
 
 use PHPUnit\Framework\TestCase;
 use cashier\StringUtil;

@@ -1,6 +1,6 @@
 <?php
 
-require_once __DIR__."/../../../inc/model/Account.php";
+require_once __DIR__."/../../inc/model/Account.php";
 
 use PHPUnit\Framework\TestCase;
 use cashier\Account;

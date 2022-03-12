@@ -57,10 +57,40 @@ class Currency extends ExtensiblePost {
 			return $adapter["process_cb"]($this,$user);
 	}
 
-	private static function toString($number) {
-		$s=sprintf("%.10f",$number);
-		$s=rtrim($s,"0");
-		$s=rtrim($s,".");
-		return $s;
+	public function importRates() {
+		$adapter=$this->getAdapter();
+		if (!isset($adapter["import_rates_cb"]))
+			throw new \Exception("This currency does not support rates.");
+
+		$adapter["import_rates_cb"]($this);
+	}
+
+	public function convertAmountTo($amount, $symbol) {
+		$rateMeta=$this->getMeta("rates");
+		if (!array_key_exists($symbol,$rateMeta))
+			throw new \Exception("Unknown rate currency: ".$symbol);
+
+		return $amount*$rateMeta[$symbol];
+	}
+
+	public function convertAmountFrom($amount, $symbol) {
+		$rateMeta=$this->getMeta("rates");
+		if (!array_key_exists($symbol,$rateMeta))
+			throw new \Exception("Unknown rate currency: ".$symbol);
+
+		return $amount/$rateMeta[$symbol];
+	}
+
+	public function hasSupport($feature) {
+		switch ($feature) {
+			case 'rates':
+				$adapter=$this->getAdapter();
+				return isset($adapter["import_rates_cb"]);
+				break;
+			
+			default:
+				throw new \Exception("Unknown currency feature: ".$feature);
+				break;
+		}
 	}
 }

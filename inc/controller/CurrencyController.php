@@ -120,6 +120,12 @@ class CurrencyController extends Singleton {
 	public function save($currency) {
 		$fieldCollection=$this->createInputFieldCollection();
 		$fieldCollection->savePostMeta($currency->ID);
+
+		if ($currency->hasSupport("rates"))
+			$currency->importRates();
+
+		else
+			$currency->setMeta("rates",NULL);
 	}
 
 	public function renderContent($currency) {
