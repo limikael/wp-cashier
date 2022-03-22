@@ -21,10 +21,19 @@ class PlaymoneyController extends Singleton {
 			"tabs"=>array(
 				"topup"=>"Top Up",
 			),
-			"tab_cb"=>array($this,"tab")
+			"tab_cb"=>array($this,"tab"),
+			"import_rates_cb"=>array($this,"importRates")
 		);
 
 		return $adapters;
+	}
+
+	public function importRates($currency) {
+		$rateMeta=array(
+			"usd"=>.01
+		);
+
+		$currency->setMeta("rates",$rateMeta);
 	}
 
 	public function wp() {

@@ -66,6 +66,9 @@ class Currency extends ExtensiblePost {
 	}
 
 	public function convertAmountTo($amount, $symbol) {
+		if (!$this->hasSupport("rates"))
+			throw new \Exception("This currency does not support rates");
+
 		$rateMeta=$this->getMeta("rates");
 		if (!array_key_exists($symbol,$rateMeta))
 			throw new \Exception("Unknown rate currency: ".$symbol);
@@ -74,6 +77,9 @@ class Currency extends ExtensiblePost {
 	}
 
 	public function convertAmountFrom($amount, $symbol) {
+		if (!$this->hasSupport("rates"))
+			throw new \Exception("This currency does not support rates");
+
 		$rateMeta=$this->getMeta("rates");
 		if (!array_key_exists($symbol,$rateMeta))
 			throw new \Exception("Unknown rate currency: ".$symbol);
