@@ -52,27 +52,7 @@
 		updateConditionalVisibility();
 	}
 
-	function installTxUi(openId) {
-		$(".cashier-link-row").click(function(e) {
-			if ($(e.target).prop("tagName")!="A")
-				$(this).find("a")[0].click();
-		});
-
-		$(".cashier-tx-closed-row").click(function() {
-			let id=$(this).attr("data-tx-id");
-			$(".cashier-tx-open-row").hide();
-			$(".cashier-tx-closed-row").show();
-			$(".cashier-tx-open-row[data-tx-id='"+id+"']").show();
-			$(".cashier-tx-closed-row[data-tx-id='"+id+"']").hide();
-			return false;
-		});
-
-		$(".cashier-tx-open-row").click(function() {
-			$(".cashier-tx-open-row").hide();
-			$(".cashier-tx-closed-row").show();
-			return false;
-		});
-
+	function openTxRow(openId) {
 		if (openId) {
 			$(".cashier-tx-open-row[data-tx-id='"+openId+"']").show();
 			$(".cashier-tx-closed-row[data-tx-id='"+openId+"']").hide();
@@ -106,7 +86,7 @@
 
 			let openId=$(".cashier-tx-open-row:visible").attr("data-tx-id");
 			processJqueryReplacements(JSON.parse(messageEvent.data));
-			installTxUi(openId);
+			openTxRow(openId);
 		}
 	}
 
@@ -119,10 +99,33 @@
 		installConditionalVisibility();
 		installQrCode();
 		installCopyOnClick();
-		installTxUi();
 		installEventSource();
+	}
+
+	function installTableUi() {
+		$(document).on("click",".cashier-link-row",function(e) {
+			if ($(e.target).prop("tagName")!="A") {
+				$(this).find("a")[0].click();
+			}
+		});
+
+		$(document).on("click",".cashier-tx-closed-row",function() {
+			let id=$(this).attr("data-tx-id");
+			$(".cashier-tx-open-row").hide();
+			$(".cashier-tx-closed-row").show();
+			$(".cashier-tx-open-row[data-tx-id='"+id+"']").show();
+			$(".cashier-tx-closed-row[data-tx-id='"+id+"']").hide();
+			return false;
+		});
+
+		$(document).on("click",".cashier-tx-open-row",function() {
+			$(".cashier-tx-open-row").hide();
+			$(".cashier-tx-closed-row").show();
+			return false;
+		});
 	}
 
 	window.addEventListener("reload",installCashierComponents);
 	installCashierComponents();
+	installTableUi();
 })(jQuery);
