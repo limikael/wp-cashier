@@ -1,19 +1,13 @@
 <div class="row">
 	<div class="col-3 col-md-2"><b>Balance:</b></div>
 	<div class="col-4">
-		<span id="cashier-account-balance"
-				data-currency="<?php echo esc_attr($currencyId); ?>"
-				data-balance="<?php echo esc_attr($balance); ?>">
-			<?php echo esc_html($balanceText); ?>
-		</span>
+		<span class="cashier-account-balance"></span>
 	</div>
 </div>
 <div class="row mb-3">
 	<div class="col-3 col-md-2"><b>Reserved:</b></div>
 	<div class="col-2">
-		<span id="cashier-account-reserved">
-			<?php echo esc_html($reservedText); ?>
-		</span>
+		<span class="cashier-account-reserved"></span>
 	</div>
 </div>
 

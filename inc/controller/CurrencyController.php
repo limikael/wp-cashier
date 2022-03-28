@@ -53,23 +53,15 @@ class CurrencyController extends Singleton {
 		if ($key==$account->getEventChannel()) {
 			$currency=$account->getCurrency();
 
-			$response=array();
-			$response["text"]=array();
-			$response["replaceWith"]=array();
+			$data[".cashier-balance-menu a"]="Balance: ".$account->formatBalance();
 
-			$response["text"]["#cashier-account-balance"]=
-				$account->formatBalance();
+			$data[".cashier-account-balance"]=$account->formatBalance();
+			$data[".cashier-account-reserved"]=
+				$currency->format($account->getReserved(),"hyphenated");
 
-			$reservedAmount=$account->getReserved();
-			$response["text"]["#cashier-account-reserved"]=
-				$currency->format($reservedAmount,"hyphenated");
-
-			$response["replaceWith"]["#cashier-transaction-list"]=
-				CurrencyController::instance()->renderActivityTab($user,$currency,$_REQUEST);
-
-			$response["balance"]=$account->getBalance();
-
-			return $response;
+			if (array_key_exists("activityPage",$_REQUEST))
+				$data["#cashier-transaction-list"]=
+					$this->renderActivityTab($user,$currency,$_REQUEST["activityPage"]);
 		}
 
 		return $data;
@@ -172,8 +164,22 @@ class CurrencyController extends Singleton {
 		$t=new Template(__DIR__."/../tpl/currency-header.tpl.php");
 		$content=$t->render($vars);
 
-		if ($currentTab=="activity")
-			$content.=$this->renderActivityTab($user,$currency,$_REQUEST);
+		if ($currentTab=="activity") {
+			$content.=HtmlUtil::renderTag("div",array(
+				"id"=>"cashier-transaction-list"
+			));
+
+			$activityPage=0;
+			if (array_key_exists("activityPage",$_REQUEST))
+				$activityPage=$_REQUEST["activityPage"];
+
+			$content.=HtmlUtil::renderTag("input",array(
+				"type"=>"hidden",
+				"class"=>"event-source-param",
+				"name"=>"activityPage",
+				"value"=>$activityPage
+			));
+		}
 
 		else
 			$content.=$adapter["tab_cb"]($currentTab,$currency,$user);
@@ -181,12 +187,8 @@ class CurrencyController extends Singleton {
 		return $content;
 	}
 
-	public function renderActivityTab($user, $currency, $req) {
+	public function renderActivityTab($user, $currency, $activityPage) {
 		$account=Account::getUserAccount($user->ID,$currency->ID);
-
-		$activityPage=0;
-		if (array_key_exists("activityPage",$req))
-			$activityPage=$req["activityPage"];
 
 		$perPage=20;
 		$numTransactions=$account->getTransactionCount();

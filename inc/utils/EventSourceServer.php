@@ -16,6 +16,9 @@ class EventSourceServer {
 		header("Content-type: text/event-stream");
 
 		session_write_close();
+
+		while (ob_get_level())
+			ob_end_flush();
 	}
 
 	public function ping() {
@@ -25,8 +28,9 @@ class EventSourceServer {
 	}
 
 	public function send($data) {
+		//error_log("sending: ".print_r($data,TRUE));
+
 		echo "data: ".json_encode($data)."\n\n";
-		@ob_flush();
 		flush();
 	}
 }

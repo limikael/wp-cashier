@@ -39,6 +39,7 @@ class CashierPlugin extends Singleton {
 		$dir=sys_get_temp_dir()."/rev-".sanitize_title(get_bloginfo("url"));
 		$this->revServer=new RevServer($dir);
 		$this->revServer->setTimeout(10);
+		//$this->revServer->setTimeout(1);
 		$this->revServer->initAjax("events");
 	}
 

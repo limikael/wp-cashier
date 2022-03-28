@@ -98,36 +98,21 @@
 			url=buildUrl(url,$(this).attr("name"),$(this).val());
 		});
 
+		//console.log("event source: "+url);
+
 		window.cashierEventSource=new EventSource(url);
 		window.cashierEventSource.onmessage=function(messageEvent) {
 			//console.log("sse event...");
 
-			let data=JSON.parse(messageEvent.data);
-			window.postMessage(data);
+			let openId=$(".cashier-tx-open-row:visible").attr("data-tx-id");
+			processJqueryReplacements(JSON.parse(messageEvent.data));
+			installTxUi(openId);
 		}
 	}
 
-	function processJqueryReplacements(res) {
-		if (res.text)
-			for (let selector in res.text)
-				$(selector).text(res.text[selector]);
-
-		if (res.replaceWith)
-			for (let selector in res.replaceWith)
-				$(selector).replaceWith(res.replaceWith[selector]);
-	}
-
-	function handleEventSourceMessage(ev) {
-		//console.log("event source message");
-
-		let openId=$(".cashier-tx-open-row:visible").attr("data-tx-id");
-		processJqueryReplacements(ev.data);
-		installTxUi(openId);
-	}
-
-	function installEventSourceListener() {
-		window.removeEventListener("message",handleEventSourceMessage);
-		window.addEventListener("message",handleEventSourceMessage);
+	function processJqueryReplacements(replacements) {
+		for (let selector in replacements)
+			$(selector).html(replacements[selector]);
 	}
 
 	function installCashierComponents() {
@@ -136,7 +121,6 @@
 		installCopyOnClick();
 		installTxUi();
 		installEventSource();
-		installEventSourceListener();
 	}
 
 	window.addEventListener("reload",installCashierComponents);

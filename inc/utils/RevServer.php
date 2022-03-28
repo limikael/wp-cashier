@@ -47,6 +47,8 @@ class RevServer {
 	public function run() {
 		$this->eventSourceServer=new EventSourceServer();
 
+		//error_log("running event soruce...");
+
 		$lastPing=time();
 		while (TRUE) {
 			wp_cache_flush();
@@ -65,10 +67,17 @@ class RevServer {
 			foreach ($this->channels as $key=>$fifo)
 				$fifoSignals[]=$fifo;
 
-			$triggered=FifoSignal::waitAll($fifoSignals,$this->timeout);
-			foreach ($this->channels as $key=>$fifo) {
-				if (in_array($fifo,$triggered))
-					$this->channels[$key]=NULL;
+			if (count($fifoSignals)) {
+				$triggered=FifoSignal::waitAll($fifoSignals,$this->timeout);
+				foreach ($this->channels as $key=>$fifo) {
+					if (in_array($fifo,$triggered))
+						$this->channels[$key]=NULL;
+				}
+			}
+
+			else {
+				$triggered=array();
+				sleep($this->timeout);
 			}
 
 			if (!count($triggered) || time()>=$lastPing+$this->timeout) {
