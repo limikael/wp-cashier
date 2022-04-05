@@ -27,19 +27,12 @@ class ElectrumUser {
 		return $electrumClient;
 	}
 
-	private function getMeta($key) {
-		$key="cashier_".$this->currency->ID."_".$key;
-		return get_user_meta($this->user->ID,$key,TRUE);
+	public function getMeta($key) {
+		return $this->currency->getUserMeta($this->user->ID,$key);
 	}
 
-	private function setMeta($key, $value) {
-		$key="cashier_".$this->currency->ID."_".$key;
-
-		if ($value===NULL)
-			delete_user_meta($this->user->ID,$key);
-
-		else
-			update_user_meta($this->user->ID,$key,$value);
+	public function setMeta($key, $value) {
+		$this->currency->setUserMeta($this->user->ID,$key,$value);
 	}
 
 	public function getAddress() {
@@ -77,6 +70,10 @@ class ElectrumUser {
 
 	public function getAccount() {
 		return Account::getUserAccount($this->user->ID,$this->currency->ID);
+	}
+
+	public function getUser() {
+		return $this->user;
 	}
 
 	public function getCurrency() {

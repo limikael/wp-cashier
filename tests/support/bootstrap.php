@@ -9,7 +9,7 @@ WpTestBootstrapper::bootstrap(array(
 	"dbfile"=>__DIR__."/wordpress.sql",
 	"wpfile"=>__DIR__."/wordpress.zip",
 	"wpdir"=>__DIR__."/wordpress",
-//	"install"=>FALSE
+	"install"=>FALSE
 ));
 
 require_once __DIR__."/../../wp-cashier.php";

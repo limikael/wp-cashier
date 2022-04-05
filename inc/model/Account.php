@@ -232,10 +232,6 @@ class Account {
 		return $amount;
 	}
 
-	public function formatBalance($style="standard") {
-		return $this->currency->format($this->getBalance(),$style);
-	}
-
 	public function getEventChannel() {
 		return "account_".$this->currency->ID."_".$this->entityType."_".$this->entityId;
 	}

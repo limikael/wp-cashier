@@ -1,4 +1,4 @@
-<div class="cashier-qr-cover">
+<div class="cashier-qr-cover-inner">
 	<div class="container">
 		<div class="row text-center">
 			<i class="bi bi-check-circle-fill text-success cashier-qr-icon"></i>

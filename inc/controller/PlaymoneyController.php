@@ -22,18 +22,26 @@ class PlaymoneyController extends Singleton {
 				"deposit"=>"Top Up",
 			),
 			"tab_cb"=>array($this,"tab"),
-			"import_rates_cb"=>array($this,"importRates")
+			"install_cb"=>array($this,"install"),
+			"denominations"=>array(
+				"ply"=>array(
+					"symbol"=>"PLY",
+					"name"=>"Playmoney"
+				),
+				"kply"=>array(
+					"symbol"=>"KPLY",
+					"decimals"=>3,
+					"value"=>.001,
+					"name"=>"Thousands of Playmoney"
+				)
+			)
 		);
 
 		return $adapters;
 	}
 
-	public function importRates($currency) {
-		$rateMeta=array(
-			"usd"=>.01
-		);
-
-		$currency->setMeta("rates",$rateMeta);
+	public function install($currency) {
+		error_log("installing playmoney");
 	}
 
 	public function wp() {
@@ -80,8 +88,10 @@ class PlaymoneyController extends Singleton {
 	}
 
 	public function tab($tab, $currency, $user) {
+		$formatter=$currency->getFormatterForUser($user->ID);
+
 		$vars=array(
-			"replenishText"=>$currency->format($currency->getMeta("replenish"))
+			"replenishText"=>$formatter->format($currency->getMeta("replenish"))
 		);
 
 		$t=new Template(__DIR__."/../tpl/playmoney-topup.tpl.php");

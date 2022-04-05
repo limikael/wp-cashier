@@ -31,11 +31,12 @@ class UmController extends Singleton {
 
 		foreach ($currencies as $currency) {
 			$account=Account::getUserAccount($user->ID,$currency->ID);
+			$formatter=$currency->getFormatterForUser($user->ID);
 			$currencyViews[]=array(
 				"title"=>$currency->post_title,
 				"logo"=>null,
 				"url"=>get_post_permalink($currency->ID),
-				"balance"=>$account->formatBalance(),
+				"balance"=>$formatter->format($account->getBalance()),
 			);
 		}
 

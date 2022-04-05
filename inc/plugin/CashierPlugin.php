@@ -11,7 +11,6 @@ require_once __DIR__."/../model/Transaction.php";
 require_once __DIR__."/../controller/CurrencyController.php";
 require_once __DIR__."/../controller/PlaymoneyController.php";
 require_once __DIR__."/../controller/ElectrumController.php";
-require_once __DIR__."/../controller/AjaxController.php";
 require_once __DIR__."/../controller/UmController.php";
 
 class CashierPlugin extends Singleton {
@@ -39,7 +38,6 @@ class CashierPlugin extends Singleton {
 		$dir=sys_get_temp_dir()."/rev-".sanitize_title(get_bloginfo("url"));
 		$this->revServer=new RevServer($dir);
 		$this->revServer->setTimeout(10);
-		//$this->revServer->setTimeout(1);
 		$this->revServer->initAjax("events");
 	}
 
@@ -53,10 +51,8 @@ class CashierPlugin extends Singleton {
 			}
 		}
 
-		foreach (Currency::findMany() as $currency) {
-			if ($currency->hasSupport("rates"))
-				$currency->importRates();
-		}
+		foreach (Currency::findMany() as $currency)
+			$currency->install();
 	}
 
 	public function activate() {

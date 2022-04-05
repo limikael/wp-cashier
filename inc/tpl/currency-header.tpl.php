@@ -1,12 +1,12 @@
 <div class="row">
-	<div class="col-3 col-md-2"><b>Balance:</b></div>
-	<div class="col-4">
+	<div class="col-4 col-sm-3"><b>Balance:</b></div>
+	<div class="col-8">
 		<span class="cashier-account-balance"></span>
 	</div>
 </div>
 <div class="row mb-3">
-	<div class="col-3 col-md-2"><b>Reserved:</b></div>
-	<div class="col-2">
+	<div class="col-4 col-sm-3"><b>Reserved:</b></div>
+	<div class="col-8">
 		<span class="cashier-account-reserved"></span>
 	</div>
 </div>

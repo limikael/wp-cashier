@@ -9,6 +9,8 @@ require_once __DIR__."/../utils/InputFieldCollection.php";
 
 class CurrencyController extends Singleton {
 	protected function __construct() {
+		add_action("wp",array($this,"wp"));
+
 		Currency::registerPostType();
 		Currency::addMetaBox("Settings",array($this,"settingsMetaBox"));
 		Currency::registerContentHandler(array($this,"renderContent"));
@@ -20,6 +22,22 @@ class CurrencyController extends Singleton {
 		add_filter("sse_init",array($this,"sse_init"));
 		add_filter("sse_data",array($this,"sse_data"),10,2);
 		add_filter("sse_ping",array($this,"sse_ping"));
+	}
+
+	public function wp() {
+		if (isset($_REQUEST["save-currency-settings"])) {
+			$currency=Currency::getCurrent();
+			$user=wp_get_current_user();
+
+			if (!$user->ID || !$currency->ID)
+				throw new \Exception("Bad args");
+
+			$currency->setUserMeta($user->ID,"denomination",$_REQUEST["denomination"]);
+			$notices=CashierPlugin::instance()->getSessionNotices();
+			$notices->notice("Settings saved.");
+			wp_redirect(HtmlUtil::getCurrentUrl(),303);
+			exit();
+		}
 	}
 
 	public function sse_ping($data) {
@@ -52,12 +70,15 @@ class CurrencyController extends Singleton {
 
 		if ($key==$account->getEventChannel()) {
 			$currency=$account->getCurrency();
+			$formatter=$currency->getFormatterForUser($user->ID);
 
-			$data[".cashier-balance-menu a"]="Balance: ".$account->formatBalance();
+			$data[".cashier-balance-menu a"]=
+				"Balance: ".$formatter->format($account->getBalance());
 
-			$data[".cashier-account-balance"]=$account->formatBalance();
-			$data[".cashier-account-reserved"]=
-				$currency->format($account->getReserved(),"hyphenated");
+			$data[".cashier-account-balance"]=$formatter->format($account->getBalance());
+			$data[".cashier-account-reserved"]=$formatter->format($account->getReserved(),array(
+					"hyphenZero"=>TRUE
+				));
 
 			if (array_key_exists("activityPage",$_REQUEST))
 				$data["#cashier-transaction-list"]=
@@ -73,16 +94,6 @@ class CurrencyController extends Singleton {
 		$adapterOptions=array();
 		foreach (CashierPlugin::instance()->getAdapters() as $id=>$adapter)
 			$adapterOptions[$id]=$adapter["title"];
-
-		$collection->createField(array(
-			"name"=>"symbol"
-		));
-
-		$collection->createField(array(
-			"name"=>"decimals",
-			"type"=>"select",
-			"options"=>array(0,1,2,3,4,5,6,7,8),
-		));
 
 		$adapterSelect=$collection->createField(array(
 			"name"=>"adapter",
@@ -112,12 +123,7 @@ class CurrencyController extends Singleton {
 	public function save($currency) {
 		$fieldCollection=$this->createInputFieldCollection();
 		$fieldCollection->savePostMeta($currency->ID);
-
-		if ($currency->hasSupport("rates"))
-			$currency->importRates();
-
-		else
-			$currency->setMeta("rates",NULL);
+		$currency->install();
 	}
 
 	public function renderContent($currency) {
@@ -133,10 +139,18 @@ class CurrencyController extends Singleton {
 			"activity"=>array(
 				"title"=>"Activity",
 				"link"=>$link,
+			),
+			"settings"=>array(
+				"title"=>"Settings",
+				"link"=>add_query_arg("tab","settings",$link)
 			)
 		);
 
-		foreach ($adapter["tabs"] as $tabId=>$tabName) {
+		$tabIds=$adapter["tabs"];
+		if (isset($adapter["tabs_cb"]))
+			$tabIds=$adapter["tabs_cb"]($currency);
+
+		foreach ($tabIds as $tabId=>$tabName) {
 			$tabs[$tabId]=array(
 				"title"=>$tabName,
 				"link"=>add_query_arg(array(
@@ -149,13 +163,12 @@ class CurrencyController extends Singleton {
 		if (isset($_REQUEST["tab"]))
 			$currentTab=$_REQUEST["tab"];
 
-		$reservedAmount=$account->getReserved();
+		$formatter=$currency->getFormatterForUser($user->ID);
 
 		$vars=array(
 			"tabs"=>$tabs,
 			"balance"=>$account->getBalance(),
-			"balanceText"=>$account->formatBalance(),
-			"reservedText"=>$currency->format($reservedAmount,"hyphenated"),
+			"balanceText"=>$formatter->format($account->getBalance()),
 			"currentTab"=>$currentTab,
 			"notices"=>CashierPlugin::instance()->getSessionNotices()->renderNotices(),
 			"currencyId"=>$currency->ID
@@ -181,6 +194,20 @@ class CurrencyController extends Singleton {
 			));
 		}
 
+		else if ($currentTab=="settings") {
+			foreach ($currency->getDenominations() as $k=>$denomination)
+				$denominationOptions[$k]=$denomination["name"]." (".$denomination["symbol"].")";
+
+			$vars=array(
+				"denomination"=>$currency->getUserMeta($user->ID,"denomination"),
+				"denominationOptions"=>$denominationOptions,
+				"currency"=>$currency->ID
+			);
+
+			$t=new Template(__DIR__."/../tpl/settings.tpl.php");
+			$content.=$t->render($vars);
+		}
+
 		else
 			$content.=$adapter["tab_cb"]($currentTab,$currency,$user);
 
@@ -189,6 +216,7 @@ class CurrencyController extends Singleton {
 
 	public function renderActivityTab($user, $currency, $activityPage) {
 		$account=Account::getUserAccount($user->ID,$currency->ID);
+		$formatter=$currency->getFormatterForUser($user->ID);
 
 		$perPage=20;
 		$numTransactions=$account->getTransactionCount();
@@ -225,7 +253,7 @@ class CurrencyController extends Singleton {
 
 			$transactionView=array(
 				"stamp"=>$transaction->formatSiteTime(),
-				"amount"=>$transaction->formatRelativeAmount($account),
+				"amount"=>$formatter->format($transaction->getRelativeAmount($account)),
 				"entity"=>"-",
 				"notice"=>$transaction->notice,
 				"class"=>$class,

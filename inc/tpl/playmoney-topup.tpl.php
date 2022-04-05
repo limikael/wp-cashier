@@ -1,4 +1,4 @@
-<form method="POST" action="" class="cashier-form">
+<form method="POST" class="cashier-form">
 	<p>
 		You can top up your playmoney account to 
 		<?php echo esc_html($replenishText); ?>!

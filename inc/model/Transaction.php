@@ -95,15 +95,6 @@ class Transaction extends Record {
 		return Currency::findOne($this->currency);
 	}
 
-	public function formatAmount($style="standard") {
-		return $this->getCurrency()->format($this->amount,$style);
-	}
-
-	public function formatRelativeAmount($account, $style="standard") {
-		$relativeAmount=$this->getRelativeAmount($account);
-		return $this->getCurrency()->format($relativeAmount,$style);
-	}
-
 	public function formatSiteTime() {
 		$localStamp=($this->stamp+(int)(get_option('gmt_offset')*HOUR_IN_SECONDS));
 		return gmdate("Y-m-d H:i:s",$localStamp);

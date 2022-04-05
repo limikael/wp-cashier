@@ -3,6 +3,7 @@
 namespace cashier;
 
 require_once __DIR__."/../utils/ExtensiblePost.php";
+require_once __DIR__."/CurrencyFormatter.php";
 
 class Currency extends ExtensiblePost {
 	public function getAdapter() {
@@ -11,92 +12,72 @@ class Currency extends ExtensiblePost {
 		return $adapters[$this->getMeta("adapter")];
 	}
 
-	public function getDecimals() {
-		return intval($this->getMeta("decimals"));
-	}
-
-	public function format($amount, $style="standard") {
-		$dividedAmount=$amount/pow(10,$this->getDecimals());
-
-		switch ($style) {
-			case "hyphenated":
-				if (!$amount)
-					return "-";
-
-				return $this->format($amount,"standard");
-				break;
-
-			case "standard":
-				$dividedAmount=sprintf("%.{$this->getDecimals()}f",$dividedAmount);
-				$dividedAmount.=" ".$this->getMeta("symbol");
-				break;
-
-			case "number":
-				break;
-
-			case "string":
-				return sprintf("%.{$this->getDecimals()}f",$dividedAmount);
-				break;
-
-			default:
-				throw new \Exception("Unknown currency format style");
-		}
-
-		return $dividedAmount;
-	}
-
-	public function parseInput($input) {
-		$amount=floatval($input)*pow(10,$this->getDecimals());
-
-		return $amount;
-	}
-
 	public function process($user) {
 		$adapter=$this->getAdapter();
 		if (isset($adapter["process_cb"]) && $adapter["process_cb"])
 			return $adapter["process_cb"]($this,$user);
 	}
 
-	public function importRates() {
+	public function install() {
 		$adapter=$this->getAdapter();
-		if (!isset($adapter["import_rates_cb"]))
-			throw new \Exception("This currency does not support rates.");
-
-		$adapter["import_rates_cb"]($this);
+		if (isset($adapter["install_cb"]) && $adapter["install_cb"])
+			return $adapter["install_cb"]($this);
 	}
 
-	public function convertAmountTo($amount, $symbol) {
-		if (!$this->hasSupport("rates"))
-			throw new \Exception("This currency does not support rates");
+	public function getUserMeta($uid, $key) {
+		if (!$uid)
+			return;
 
-		$rateMeta=$this->getMeta("rates");
-		if (!array_key_exists($symbol,$rateMeta))
-			throw new \Exception("Unknown rate currency: ".$symbol);
-
-		return $amount*$rateMeta[$symbol];
+		$key="cashier_".$this->ID."_".$key;
+		return get_user_meta($uid,$key,TRUE);
 	}
 
-	public function convertAmountFrom($amount, $symbol) {
-		if (!$this->hasSupport("rates"))
-			throw new \Exception("This currency does not support rates");
+	public function setUserMeta($uid, $key, $value) {
+		if (!$uid)
+			return;
 
-		$rateMeta=$this->getMeta("rates");
-		if (!array_key_exists($symbol,$rateMeta))
-			throw new \Exception("Unknown rate currency: ".$symbol);
+		$key="cashier_".$this->ID."_".$key;
 
-		return $amount/$rateMeta[$symbol];
+		if ($value===NULL)
+			delete_user_meta($uid,$key);
+
+		else
+			update_user_meta($uid,$key,$value);
 	}
 
-	public function hasSupport($feature) {
-		switch ($feature) {
-			case 'rates':
-				$adapter=$this->getAdapter();
-				return isset($adapter["import_rates_cb"]);
-				break;
-			
-			default:
-				throw new \Exception("Unknown currency feature: ".$feature);
-				break;
-		}
+	public function getDenominations() {
+		$adapter=$this->getAdapter();
+		if (isset($adapter["denominations"]))
+			return $adapter["denominations"];
+
+		if (isset($adapter["denominations_cb"]))
+			return $adapter["denominations_cb"]($this);
+
+		$denomination=array(
+			"symbol"=>strtoupper(substr($this->getMeta("adapter"),0,3))
+		);
+
+		if (isset($adapter["denomination"]))
+			$denomination=$adapter["denomination"];
+
+		return array(
+			"default"=>$denomination
+		);
+	}
+
+	public function getFormatter($denominationKey=NULL) {
+		$denominations=$this->getDenominations();
+
+		if (!$denominationKey)
+			$denominationKey=array_keys($denominations)[0];
+
+		return new CurrencyFormatter($denominations[$denominationKey]);
+	}
+
+	public function getFormatterForUser($uid) {
+		if (!$uid)
+			throw new \Exception("That's not a uid");
+
+		return $this->getFormatter($this->getUserMeta($uid,"denomination"));
 	}
 }
